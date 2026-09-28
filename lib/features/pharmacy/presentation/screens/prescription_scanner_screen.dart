@@ -1,4 +1,7 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../../core/theme/app_colors.dart';
 
 class PrescriptionScannerScreen extends StatefulWidget {
@@ -10,14 +13,60 @@ class PrescriptionScannerScreen extends StatefulWidget {
 }
 
 class _PrescriptionScannerScreenState extends State<PrescriptionScannerScreen> {
-  bool _isScanned = true;
+  final ImagePicker _picker = ImagePicker();
+  XFile? _selectedImage;
+  bool _isProcessing = false;
+  bool _isScanned = false;
+
   final TextEditingController _medicineController =
       TextEditingController(text: 'Amoxicilline 500mg');
+  String _dosage = 'Gélule 500mg';
+  String _packaging = 'Boîte de 12/21';
+  double _confidence = 98.4;
 
   @override
   void dispose() {
     _medicineController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final XFile? image = await _picker.pickImage(
+        source: source,
+        maxWidth: 1200,
+        maxHeight: 1200,
+        imageQuality: 85,
+      );
+
+      if (image == null) return;
+
+      setState(() {
+        _selectedImage = image;
+        _isProcessing = true;
+      });
+
+      // Simulation de traitement OCR / IA de vision
+      await Future.delayed(const Duration(milliseconds: 1400));
+
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+          _isScanned = true;
+          _medicineController.text = 'Amoxicilline 500mg';
+          _dosage = 'Gélule 500mg';
+          _packaging = 'Boîte de 12/21';
+          _confidence = 98.4;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isProcessing = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur lors de la capture : $e')),
+        );
+      }
+    }
   }
 
   @override
@@ -100,47 +149,64 @@ class _PrescriptionScannerScreenState extends State<PrescriptionScannerScreen> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            setState(() => _isScanned = true);
-                          },
-                          icon: const Icon(Icons.camera_alt_outlined, size: 18),
-                          label: const Text('Prendre photo'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.softBlue,
-                            foregroundColor: AppColors.tealPrimary,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                  if (_isProcessing)
+                    const Padding(
+                      padding: EdgeInsets.all(12),
+                      child: Column(
+                        children: [
+                          CircularProgressIndicator(
+                            color: AppColors.tealPrimary,
+                          ),
+                          SizedBox(height: 10),
+                          Text(
+                            "Analyse de l'ordonnance par l'IA...",
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.tealPrimary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  else
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () => _pickImage(ImageSource.camera),
+                            icon: const Icon(Icons.camera_alt_outlined, size: 18),
+                            label: const Text('Prendre photo'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.softBlue,
+                              foregroundColor: AppColors.tealPrimary,
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            setState(() => _isScanned = true);
-                          },
-                          icon: const Icon(Icons.photo_library_outlined, size: 18),
-                          label: const Text('Galerie'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.softBlue,
-                            foregroundColor: AppColors.tealPrimary,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () => _pickImage(ImageSource.gallery),
+                            icon: const Icon(Icons.photo_library_outlined, size: 18),
+                            label: const Text('Galerie'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.softBlue,
+                              foregroundColor: AppColors.tealPrimary,
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
                 ],
               ),
             ),
@@ -159,17 +225,24 @@ class _PrescriptionScannerScreenState extends State<PrescriptionScannerScreen> {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          width: 60,
-                          height: 60,
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade200,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Icon(
-                            Icons.receipt_long_rounded,
-                            color: AppColors.tealPrimary,
-                            size: 32,
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: SizedBox(
+                            width: 65,
+                            height: 65,
+                            child: _selectedImage != null && !kIsWeb
+                                ? Image.file(
+                                    File(_selectedImage!.path),
+                                    fit: BoxFit.cover,
+                                  )
+                                : Container(
+                                    color: Colors.grey.shade200,
+                                    child: const Icon(
+                                      Icons.receipt_long_rounded,
+                                      color: AppColors.tealPrimary,
+                                      size: 32,
+                                    ),
+                                  ),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -203,9 +276,9 @@ class _PrescriptionScannerScreenState extends State<PrescriptionScannerScreen> {
                                   letterSpacing: 0.3,
                                 ),
                               ),
-                              const Text(
-                                'Indice de confiance : 98.4%',
-                                style: TextStyle(
+                              Text(
+                                'Indice de confiance : $_confidence%',
+                                style: const TextStyle(
                                   fontSize: 12,
                                   color: AppColors.textSecondary,
                                   fontWeight: FontWeight.w500,
@@ -233,12 +306,17 @@ class _PrescriptionScannerScreenState extends State<PrescriptionScannerScreen> {
                         color: AppColors.softBlue.withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Text(
-                        _medicineController.text,
+                      child: TextField(
+                        controller: _medicineController,
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
+                        ),
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          isDense: true,
+                          contentPadding: EdgeInsets.zero,
                         ),
                       ),
                     ),
@@ -260,10 +338,10 @@ class _PrescriptionScannerScreenState extends State<PrescriptionScannerScreen> {
                               color: AppColors.softBlue.withValues(alpha: 0.4),
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: const Column(
+                            child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
+                                const Text(
                                   'Dosage',
                                   style: TextStyle(
                                     fontSize: 11,
@@ -271,10 +349,10 @@ class _PrescriptionScannerScreenState extends State<PrescriptionScannerScreen> {
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
-                                SizedBox(height: 2),
+                                const SizedBox(height: 2),
                                 Text(
-                                  'Gélule 500mg',
-                                  style: TextStyle(
+                                  _dosage,
+                                  style: const TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w700,
                                     color: AppColors.textPrimary,
@@ -292,10 +370,10 @@ class _PrescriptionScannerScreenState extends State<PrescriptionScannerScreen> {
                               color: AppColors.softBlue.withValues(alpha: 0.4),
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: const Column(
+                            child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
+                                const Text(
                                   'Conditionnement',
                                   style: TextStyle(
                                     fontSize: 11,
@@ -303,10 +381,10 @@ class _PrescriptionScannerScreenState extends State<PrescriptionScannerScreen> {
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
-                                SizedBox(height: 2),
+                                const SizedBox(height: 2),
                                 Text(
-                                  'Boîte de 12/21',
-                                  style: TextStyle(
+                                  _packaging,
+                                  style: const TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w700,
                                     color: AppColors.textPrimary,
@@ -355,7 +433,7 @@ class _PrescriptionScannerScreenState extends State<PrescriptionScannerScreen> {
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () {
-                Navigator.pop(context, _medicineController.text);
+                Navigator.pop(context, _medicineController.text.trim());
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryRed,

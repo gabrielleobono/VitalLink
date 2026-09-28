@@ -20,6 +20,7 @@ class PharmacyRepository {
       dutySchedule: "Permanence ouverte jusqu'à 08h00 demain matin",
       isVerified: true,
       services: ['Vaccinations', 'Paiement Mobile', 'Urgences 24h'],
+      availableMedicines: ['Amoxicilline 500mg', 'Paracétamol', 'Ibuprofène', 'Arteméther'],
     ),
     Pharmacy(
       id: 'ph_palmiers',
@@ -33,6 +34,7 @@ class PharmacyRepository {
       dutySchedule: 'Ouverte (ferme à 20h00)',
       isVerified: true,
       services: ['Vaccinations', 'Paiement Mobile', 'Livraison Express'],
+      availableMedicines: ['Paracétamol', 'Vitamine C', 'Ciprofloxacine'],
     ),
     Pharmacy(
       id: 'ph_akwa',
@@ -46,6 +48,7 @@ class PharmacyRepository {
       dutySchedule: 'Permanence de garde active',
       isVerified: true,
       services: ['Paiement Mobile', 'Conseil Médical'],
+      availableMedicines: ['Amoxicilline 500mg', 'Paracétamol 1g', 'Azithromycine'],
     ),
     Pharmacy(
       id: 'ph_deido',
@@ -59,6 +62,7 @@ class PharmacyRepository {
       dutySchedule: 'Ferme à 21h30',
       isVerified: true,
       services: ['Livraison Express'],
+      availableMedicines: ['Ibuprofène', 'Oméprazole'],
     ),
   ];
 

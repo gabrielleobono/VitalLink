@@ -10,6 +10,7 @@
   final String dutySchedule;
   final bool isVerified;
   final List<String> services;
+  final List<String> availableMedicines;
   final double? distanceInMeters;
 
   const Pharmacy({
@@ -24,6 +25,7 @@
     required this.dutySchedule,
     this.isVerified = true,
     this.services = const [],
+    this.availableMedicines = const [],
     this.distanceInMeters,
   });
 
@@ -51,6 +53,10 @@
               ?.map((e) => e.toString())
               .toList() ??
           const [],
+      availableMedicines: (map['availableMedicines'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
     );
   }
 
@@ -66,6 +72,7 @@
       'dutySchedule': dutySchedule,
       'isVerified': isVerified,
       'services': services,
+      'availableMedicines': availableMedicines,
     };
   }
 
@@ -84,6 +91,7 @@
       dutySchedule: dutySchedule,
       isVerified: isVerified,
       services: services,
+      availableMedicines: availableMedicines,
       distanceInMeters: distanceInMeters ?? this.distanceInMeters,
     );
   }

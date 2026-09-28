@@ -90,7 +90,8 @@ final filteredPharmaciesProvider = Provider<List<Pharmacy>>((ref) {
       final matchName = p.name.toLowerCase().contains(query);
       final matchAddr = p.address.toLowerCase().contains(query);
       final matchNeigh = p.neighborhood.toLowerCase().contains(query);
-      return matchName || matchAddr || matchNeigh;
+      final matchMed = p.availableMedicines.any((m) => m.toLowerCase().contains(query));
+      return matchName || matchAddr || matchNeigh || matchMed;
     }).toList();
   }
 
