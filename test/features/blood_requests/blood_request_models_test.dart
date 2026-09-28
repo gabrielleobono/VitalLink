@@ -1,5 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_test/flutter_test.dart';
+﻿import 'package:flutter_test/flutter_test.dart';
 import 'package:vitallink/core/utils/blood_compatibility.dart';
 import 'package:vitallink/features/blood_requests/data/models/blood_request_model.dart';
 import 'package:vitallink/features/blood_requests/data/models/pledge_model.dart';
@@ -9,7 +8,7 @@ import 'package:vitallink/features/blood_requests/domain/pledge.dart';
 
 void main() {
   group('BloodRequest', () {
-    test('create() déduit les groupes compatibles, même groupe en premier', () {
+    test('create() dÃ©duit les groupes compatibles, mÃªme groupe en premier', () {
       final r = BloodRequest.create(
         id: 'r1',
         requesterId: 'u1',
@@ -37,7 +36,7 @@ void main() {
       expect(r.isFullyPledged, isTrue);
     });
 
-    test('aller-retour Firestore conserve toutes les données', () {
+    test('aller-retour Firestore conserve toutes les donnÃ©es', () {
       final original = BloodRequestModel.fromEntity(
         BloodRequest(
           id: 'r1',
@@ -48,7 +47,7 @@ void main() {
             BloodGroup.abNegative,
           ),
           hospitalId: 'h1',
-          hospitalDepartment: 'Maternité',
+          hospitalDepartment: 'MaternitÃ©',
           isMedicallyVerified: true,
           urgency: UrgencyLevel.critical,
           unitsNeeded: 3,
@@ -62,7 +61,7 @@ void main() {
 
       expect(copy.bloodGroupNeeded, BloodGroup.abNegative);
       expect(copy.compatibleGroups, original.compatibleGroups);
-      expect(copy.hospitalDepartment, 'Maternité');
+      expect(copy.hospitalDepartment, 'MaternitÃ©');
       expect(copy.isMedicallyVerified, isTrue);
       expect(copy.urgency, UrgencyLevel.critical);
       expect(copy.unitsNeeded, 3);
@@ -70,7 +69,7 @@ void main() {
       expect(copy.createdAt, DateTime.utc(2026, 9, 28, 10));
     });
 
-    test("la partie publique ne contient ni nom de patient ni téléphone", () {
+    test("la partie publique ne contient ni nom de patient ni tÃ©lÃ©phone", () {
       final map = BloodRequestModel.fromEntity(
         BloodRequest(
           id: 'r1',
@@ -86,7 +85,7 @@ void main() {
       expect(map.containsKey('contact_phone'), isFalse);
     });
 
-    test('valeurs inconnues : statut fermé, groupe invalide rejeté', () {
+    test('valeurs inconnues : statut fermÃ©, groupe invalide rejetÃ©', () {
       expect(RequestStatus.fromWire('???'), RequestStatus.closed);
       expect(
         () => BloodRequestModel.fromMap('r', {
@@ -101,7 +100,7 @@ void main() {
   });
 
   group('Pledge', () {
-    test('id déterministe : un seul engagement par donneur et par alerte', () {
+    test('id dÃ©terministe : un seul engagement par donneur et par alerte', () {
       expect(Pledge.buildId(requestId: 'r1', donorId: 'd1'), 'r1_d1');
     });
 
@@ -121,7 +120,7 @@ void main() {
       expect(copy.createdAt, DateTime.utc(2026, 9, 28, 11));
     });
 
-    test('un engagement annulé est inactif', () {
+    test('un engagement annulÃ© est inactif', () {
       expect(PledgeStatus.fromWire('CANCELLED'), PledgeStatus.cancelled);
       expect(
         const Pledge(
