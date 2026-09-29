@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../data/models/pharmacy.dart';
@@ -6,10 +6,7 @@ import '../../data/models/pharmacy.dart';
 class PharmacyCard extends StatelessWidget {
   final Pharmacy pharmacy;
 
-  const PharmacyCard({
-    super.key,
-    required this.pharmacy,
-  });
+  const PharmacyCard({super.key, required this.pharmacy});
 
   Future<void> _makeCall(BuildContext context) async {
     final phone = pharmacy.phoneNumber.replaceAll(RegExp(r'\s+'), '');
@@ -30,7 +27,8 @@ class PharmacyCard extends StatelessWidget {
   Future<void> _openMap() async {
     final query = '${pharmacy.name}, ${pharmacy.address}';
     final uri = Uri.parse(
-        'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(query)}');
+      'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(query)}',
+    );
 
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -89,8 +87,10 @@ class PharmacyCard extends StatelessWidget {
               const SizedBox(width: 8),
               if (pharmacy.isOnDuty)
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.tealBadge.withValues(alpha: 0.35),
                     borderRadius: BorderRadius.circular(20),
@@ -107,8 +107,10 @@ class PharmacyCard extends StatelessWidget {
                 )
               else
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.purpleLight,
                     borderRadius: BorderRadius.circular(20),
@@ -172,8 +174,10 @@ class PharmacyCard extends StatelessWidget {
               runSpacing: 6,
               children: pharmacy.services.map((service) {
                 return Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.background,
                     borderRadius: BorderRadius.circular(8),

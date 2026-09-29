@@ -1,4 +1,4 @@
-﻿class Pharmacy {
+class Pharmacy {
   final String id;
   final String name;
   final String address;
@@ -49,11 +49,13 @@
       isOnDuty: map['isOnDuty'] as bool? ?? false,
       dutySchedule: map['dutySchedule'] as String? ?? '',
       isVerified: map['isVerified'] as bool? ?? true,
-      services: (map['services'] as List<dynamic>?)
+      services:
+          (map['services'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
           const [],
-      availableMedicines: (map['availableMedicines'] as List<dynamic>?)
+      availableMedicines:
+          (map['availableMedicines'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
           const [],
@@ -76,9 +78,7 @@
     };
   }
 
-  Pharmacy copyWith({
-    double? distanceInMeters,
-  }) {
+  Pharmacy copyWith({double? distanceInMeters}) {
     return Pharmacy(
       id: id,
       name: name,

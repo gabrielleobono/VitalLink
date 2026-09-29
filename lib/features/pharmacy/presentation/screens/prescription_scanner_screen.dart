@@ -1,4 +1,4 @@
-﻿import 'dart:io';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -18,8 +18,9 @@ class _PrescriptionScannerScreenState extends State<PrescriptionScannerScreen> {
   bool _isProcessing = false;
   bool _isScanned = false;
 
-  final TextEditingController _medicineController =
-      TextEditingController(text: 'Amoxicilline 500mg');
+  final TextEditingController _medicineController = TextEditingController(
+    text: 'Amoxicilline 500mg',
+  );
   String _dosage = 'Gélule 500mg';
   String _packaging = 'Boîte de 12/21';
   double _confidence = 98.4;
@@ -175,7 +176,10 @@ class _PrescriptionScannerScreenState extends State<PrescriptionScannerScreen> {
                         Expanded(
                           child: ElevatedButton.icon(
                             onPressed: () => _pickImage(ImageSource.camera),
-                            icon: const Icon(Icons.camera_alt_outlined, size: 18),
+                            icon: const Icon(
+                              Icons.camera_alt_outlined,
+                              size: 18,
+                            ),
                             label: const Text('Prendre photo'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.softBlue,
@@ -192,7 +196,10 @@ class _PrescriptionScannerScreenState extends State<PrescriptionScannerScreen> {
                         Expanded(
                           child: ElevatedButton.icon(
                             onPressed: () => _pickImage(ImageSource.gallery),
-                            icon: const Icon(Icons.photo_library_outlined, size: 18),
+                            icon: const Icon(
+                              Icons.photo_library_outlined,
+                              size: 18,
+                            ),
                             label: const Text('Galerie'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.softBlue,
@@ -252,7 +259,9 @@ class _PrescriptionScannerScreenState extends State<PrescriptionScannerScreen> {
                             children: [
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 4),
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
                                 decoration: BoxDecoration(
                                   color: AppColors.tealLight,
                                   borderRadius: BorderRadius.circular(6),
@@ -301,7 +310,9 @@ class _PrescriptionScannerScreenState extends State<PrescriptionScannerScreen> {
                     const SizedBox(height: 6),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 12),
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.softBlue.withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(12),
@@ -399,7 +410,9 @@ class _PrescriptionScannerScreenState extends State<PrescriptionScannerScreen> {
                     const SizedBox(height: 12),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 12),
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.softBlue.withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(12),
@@ -446,20 +459,14 @@ class _PrescriptionScannerScreenState extends State<PrescriptionScannerScreen> {
               ),
               child: const Text(
                 'Rechercher dans les pharmacies de garde',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
               ),
             ),
             const SizedBox(height: 8),
             const Text(
               'Trouver les officines de garde à contacter',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 12,
-                color: AppColors.textSecondary,
-              ),
+              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
             ),
           ],
         ),

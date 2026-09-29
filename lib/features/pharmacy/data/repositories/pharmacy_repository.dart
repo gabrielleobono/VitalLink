@@ -1,11 +1,11 @@
-﻿import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/pharmacy.dart';
 
 class PharmacyRepository {
   final FirebaseFirestore _firestore;
 
   PharmacyRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   static const List<Pharmacy> fallbackPharmacies = [
     Pharmacy(
@@ -20,7 +20,12 @@ class PharmacyRepository {
       dutySchedule: "Permanence ouverte jusqu'à 08h00 demain matin",
       isVerified: true,
       services: ['Vaccinations', 'Paiement Mobile', 'Urgences 24h'],
-      availableMedicines: ['Amoxicilline 500mg', 'Paracétamol', 'Ibuprofène', 'Arteméther'],
+      availableMedicines: [
+        'Amoxicilline 500mg',
+        'Paracétamol',
+        'Ibuprofène',
+        'Arteméther',
+      ],
     ),
     Pharmacy(
       id: 'ph_palmiers',
@@ -48,7 +53,11 @@ class PharmacyRepository {
       dutySchedule: 'Permanence de garde active',
       isVerified: true,
       services: ['Paiement Mobile', 'Conseil Médical'],
-      availableMedicines: ['Amoxicilline 500mg', 'Paracétamol 1g', 'Azithromycine'],
+      availableMedicines: [
+        'Amoxicilline 500mg',
+        'Paracétamol 1g',
+        'Azithromycine',
+      ],
     ),
     Pharmacy(
       id: 'ph_deido',
@@ -72,13 +81,14 @@ class PharmacyRepository {
           .collection('pharmacies')
           .snapshots(includeMetadataChanges: true)
           .map((snapshot) {
-        if (snapshot.docs.isEmpty) {
-          return fallbackPharmacies;
-        }
-        return snapshot.docs
-            .map((doc) => Pharmacy.fromMap(doc.data(), doc.id))
-            .toList();
-      }).handleError((_) => fallbackPharmacies);
+            if (snapshot.docs.isEmpty) {
+              return fallbackPharmacies;
+            }
+            return snapshot.docs
+                .map((doc) => Pharmacy.fromMap(doc.data(), doc.id))
+                .toList();
+          })
+          .handleError((_) => fallbackPharmacies);
     } catch (_) {
       return Stream.value(fallbackPharmacies);
     }

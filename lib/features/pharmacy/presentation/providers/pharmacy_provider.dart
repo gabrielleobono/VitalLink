@@ -1,4 +1,4 @@
-﻿import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../data/models/pharmacy.dart';
 import '../../data/repositories/pharmacy_repository.dart';
@@ -41,7 +41,8 @@ class PharmacySearchQueryNotifier extends Notifier<String> {
 
 final pharmacySearchQueryProvider =
     NotifierProvider<PharmacySearchQueryNotifier, String>(
-        PharmacySearchQueryNotifier.new);
+      PharmacySearchQueryNotifier.new,
+    );
 
 class PharmacyFilterNotifier extends Notifier<PharmacyFilter> {
   @override
@@ -52,10 +53,12 @@ class PharmacyFilterNotifier extends Notifier<PharmacyFilter> {
 
 final pharmacyFilterProvider =
     NotifierProvider<PharmacyFilterNotifier, PharmacyFilter>(
-        PharmacyFilterNotifier.new);
+      PharmacyFilterNotifier.new,
+    );
 
-final rawPharmaciesStreamProvider =
-    StreamProvider.autoDispose<List<Pharmacy>>((ref) {
+final rawPharmaciesStreamProvider = StreamProvider.autoDispose<List<Pharmacy>>((
+  ref,
+) {
   final repo = ref.watch(pharmacyRepositoryProvider);
   return repo.watchPharmacies();
 });
@@ -66,10 +69,13 @@ final filteredPharmaciesProvider = Provider<List<Pharmacy>>((ref) {
   final filter = ref.watch(pharmacyFilterProvider);
   final userPos = ref.watch(userPositionProvider).asData?.value;
 
-  final pharmacies = pharmaciesAsync.asData?.value ?? PharmacyRepository.fallbackPharmacies;
+  final pharmacies =
+      pharmaciesAsync.asData?.value ?? PharmacyRepository.fallbackPharmacies;
 
   var list = pharmacies.map((pharmacy) {
-    if (userPos != null && pharmacy.latitude != 0.0 && pharmacy.longitude != 0.0) {
+    if (userPos != null &&
+        pharmacy.latitude != 0.0 &&
+        pharmacy.longitude != 0.0) {
       final distance = Geolocator.distanceBetween(
         userPos.latitude,
         userPos.longitude,
@@ -90,7 +96,9 @@ final filteredPharmaciesProvider = Provider<List<Pharmacy>>((ref) {
       final matchName = p.name.toLowerCase().contains(query);
       final matchAddr = p.address.toLowerCase().contains(query);
       final matchNeigh = p.neighborhood.toLowerCase().contains(query);
-      final matchMed = p.availableMedicines.any((m) => m.toLowerCase().contains(query));
+      final matchMed = p.availableMedicines.any(
+        (m) => m.toLowerCase().contains(query),
+      );
       return matchName || matchAddr || matchNeigh || matchMed;
     }).toList();
   }
