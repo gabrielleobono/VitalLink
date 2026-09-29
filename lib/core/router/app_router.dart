@@ -30,26 +30,39 @@ final appRouter = GoRouter(
       builder: (context, state) => const ScanScreen(),
     ),
     StatefulShellRoute.indexedStack(
-      builder: (context, state, navigationShell) => HomeShell(navigationShell: navigationShell),
+      builder: (context, state, navigationShell) =>
+          HomeShell(navigationShell: navigationShell),
       branches: [
         StatefulShellBranch(
           routes: [
-            GoRoute(path: AppRoutes.home, builder: (context, state) => const DashboardScreen()),
+            GoRoute(
+              path: AppRoutes.home,
+              builder: (context, state) => const DashboardScreen(),
+            ),
           ],
         ),
         StatefulShellBranch(
           routes: [
-            GoRoute(path: AppRoutes.emergencies, builder: (context, state) => const EmergencyScreen()),
+            GoRoute(
+              path: AppRoutes.emergencies,
+              builder: (context, state) => const EmergencyScreen(),
+            ),
           ],
         ),
         StatefulShellBranch(
           routes: [
-            GoRoute(path: AppRoutes.pharmacies, builder: (context, state) => const PharmaciesScreen()),
+            GoRoute(
+              path: AppRoutes.pharmacies,
+              builder: (context, state) => const PharmaciesScreen(),
+            ),
           ],
         ),
         StatefulShellBranch(
           routes: [
-            GoRoute(path: AppRoutes.profile, builder: (context, state) => const ProfileScreen()),
+            GoRoute(
+              path: AppRoutes.profile,
+              builder: (context, state) => const ProfileScreen(),
+            ),
           ],
         ),
       ],

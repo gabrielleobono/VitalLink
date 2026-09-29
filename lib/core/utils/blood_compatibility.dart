@@ -17,15 +17,15 @@ enum BloodGroup {
 /// Libellé court affiché à l'écran ("O-", "AB+", ...).
 extension BloodGroupLabel on BloodGroup {
   String get label => switch (this) {
-        BloodGroup.oNegative => 'O-',
-        BloodGroup.oPositive => 'O+',
-        BloodGroup.aNegative => 'A-',
-        BloodGroup.aPositive => 'A+',
-        BloodGroup.bNegative => 'B-',
-        BloodGroup.bPositive => 'B+',
-        BloodGroup.abNegative => 'AB-',
-        BloodGroup.abPositive => 'AB+',
-      };
+    BloodGroup.oNegative => 'O-',
+    BloodGroup.oPositive => 'O+',
+    BloodGroup.aNegative => 'A-',
+    BloodGroup.aPositive => 'A+',
+    BloodGroup.bNegative => 'B-',
+    BloodGroup.bPositive => 'B+',
+    BloodGroup.abNegative => 'AB-',
+    BloodGroup.abPositive => 'AB+',
+  };
 }
 
 /// Table de compatibilité transfusionnelle (globules rouges) et règles de
@@ -80,8 +80,7 @@ abstract final class BloodCompatibility {
   static bool canDonateTo({
     required BloodGroup donor,
     required BloodGroup receiver,
-  }) =>
-      _compatibleDonors[receiver]!.contains(donor);
+  }) => _compatibleDonors[receiver]!.contains(donor);
 
   /// Ordre de priorité pour notifier les donneurs d'une alerte : le même
   /// groupe que le receveur d'abord, puis les autres groupes compatibles,
@@ -112,10 +111,7 @@ class CompatibilityTable extends StatelessWidget {
   Widget build(BuildContext context) {
     return Table(
       border: TableBorder.all(color: AppColors.border),
-      columnWidths: const {
-        0: FixedColumnWidth(64),
-        1: FlexColumnWidth(),
-      },
+      columnWidths: const {0: FixedColumnWidth(64), 1: FlexColumnWidth()},
       children: [
         _headerRow(),
         for (final receiver in BloodGroup.values) _row(receiver),
