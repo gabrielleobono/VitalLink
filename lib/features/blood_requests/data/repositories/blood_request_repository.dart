@@ -1,4 +1,4 @@
-﻿import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../domain/blood_request_enums.dart';
 import '../models/blood_request_model.dart';
@@ -23,17 +23,24 @@ class BloodRequestRepository {
         .limit(limit)
         .snapshots()
         .map((snapshot) {
-      final requests =
-          snapshot.docs.map(BloodRequestModel.fromFirestore).toList();
-      requests.sort((a, b) {
-        final byUrgency = a.urgency.index.compareTo(b.urgency.index);
-        if (byUrgency != 0) return byUrgency;
-        final aDate = a.createdAt;
-        final bDate = b.createdAt;
-        if (aDate == null || bDate == null) return 0;
-        return bDate.compareTo(aDate);
-      });
-      return requests;
-    });
+          final requests = snapshot.docs
+              .map(BloodRequestModel.fromFirestore)
+              .toList();
+          requests.sort((a, b) {
+            final byUrgency = a.urgency.index.compareTo(b.urgency.index);
+            if (byUrgency != 0) return byUrgency;
+            final aDate = a.createdAt;
+            final bDate = b.createdAt;
+            if (aDate == null || bDate == null) return 0;
+            return bDate.compareTo(aDate);
+          });
+          return requests;
+        });
+  }
+
+  /// Une alerte précise, mise à jour en temps réel (utilisé par l'écran
+  /// Détail : le compteur de poches doit refléter les engagements en direct).
+  Stream<BloodRequestModel> watchRequestById(String id) {
+    return _collection.doc(id).snapshots().map(BloodRequestModel.fromFirestore);
   }
 }

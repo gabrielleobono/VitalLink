@@ -26,21 +26,21 @@ class BloodRequestModel extends BloodRequest {
   });
 
   factory BloodRequestModel.fromEntity(BloodRequest r) => BloodRequestModel(
-        id: r.id,
-        requesterId: r.requesterId,
-        city: r.city,
-        bloodGroupNeeded: r.bloodGroupNeeded,
-        compatibleGroups: r.compatibleGroups,
-        hospitalId: r.hospitalId,
-        hospitalDepartment: r.hospitalDepartment,
-        isMedicallyVerified: r.isMedicallyVerified,
-        urgency: r.urgency,
-        unitsNeeded: r.unitsNeeded,
-        unitsPledged: r.unitsPledged,
-        status: r.status,
-        notes: r.notes,
-        createdAt: r.createdAt,
-      );
+    id: r.id,
+    requesterId: r.requesterId,
+    city: r.city,
+    bloodGroupNeeded: r.bloodGroupNeeded,
+    compatibleGroups: r.compatibleGroups,
+    hospitalId: r.hospitalId,
+    hospitalDepartment: r.hospitalDepartment,
+    isMedicallyVerified: r.isMedicallyVerified,
+    urgency: r.urgency,
+    unitsNeeded: r.unitsNeeded,
+    unitsPledged: r.unitsPledged,
+    status: r.status,
+    notes: r.notes,
+    createdAt: r.createdAt,
+  );
 
   factory BloodRequestModel.fromFirestore(
     DocumentSnapshot<Map<String, dynamic>> doc,
@@ -62,7 +62,9 @@ class BloodRequestModel extends BloodRequest {
       id: id,
       requesterId: data['requester_id'] as String,
       city: data['city'] as String,
-      bloodGroupNeeded: bloodGroupFromLabel(data['blood_group_needed'] as String),
+      bloodGroupNeeded: bloodGroupFromLabel(
+        data['blood_group_needed'] as String,
+      ),
       compatibleGroups: groups,
       hospitalId: data['hospital_id'] as String,
       hospitalDepartment: data['hospital_department'] as String?,

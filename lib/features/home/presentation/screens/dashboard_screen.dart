@@ -7,8 +7,8 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../blood_requests/presentation/providers/blood_request_providers.dart';
 import '../../../blood_requests/presentation/widgets/blood_request_card.dart';
 
-/// Écran "Accueil" (Hub) : accès rapide Urgence/Pharmacies + fil des alertes
-/// sang ouvertes (les 5 plus urgentes/récentes).
+/// Ã‰cran "Accueil" (Hub) : accÃ¨s rapide Urgence/Pharmacies + fil des alertes
+/// sang ouvertes (les 5 plus urgentes/rÃ©centes).
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
@@ -74,7 +74,7 @@ class DashboardScreen extends ConsumerWidget {
                         padding: const EdgeInsets.only(bottom: 12),
                         child: BloodRequestCard(
                           request: request,
-                          onTap: () => context.go(AppRoutes.emergencies),
+                          onTap: () => context.push(AppRoutes.emergencyDetail(request.id)),
                         ),
                       ),
                   ],
@@ -129,7 +129,10 @@ class _QuickActionButton extends StatelessWidget {
               Text(
                 label,
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
               ),
             ],
           ),
@@ -172,7 +175,7 @@ class _FeedError extends StatelessWidget {
             style: TextStyle(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 8),
-          OutlinedButton(onPressed: onRetry, child: const Text('Réessayer')),
+          OutlinedButton(onPressed: onRetry, child: const Text('RÃ©essayer')),
         ],
       ),
     );

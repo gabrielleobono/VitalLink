@@ -16,15 +16,17 @@ class PledgeModel extends Pledge {
   });
 
   factory PledgeModel.fromEntity(Pledge p) => PledgeModel(
-        id: p.id,
-        requestId: p.requestId,
-        donorId: p.donorId,
-        estimatedArrival: p.estimatedArrival,
-        status: p.status,
-        createdAt: p.createdAt,
-      );
+    id: p.id,
+    requestId: p.requestId,
+    donorId: p.donorId,
+    estimatedArrival: p.estimatedArrival,
+    status: p.status,
+    createdAt: p.createdAt,
+  );
 
-  factory PledgeModel.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
+  factory PledgeModel.fromFirestore(
+    DocumentSnapshot<Map<String, dynamic>> doc,
+  ) {
     final data = doc.data();
     if (data == null) {
       throw StateError('Engagement ${doc.id} introuvable ou vide.');
@@ -37,8 +39,9 @@ class PledgeModel extends Pledge {
         id: id,
         requestId: data['request_id'] as String,
         donorId: data['donor_id'] as String,
-        estimatedArrival:
-            ArrivalEstimate.fromWire(data['estimated_arrival'] as String?),
+        estimatedArrival: ArrivalEstimate.fromWire(
+          data['estimated_arrival'] as String?,
+        ),
         status: PledgeStatus.fromWire(data['status'] as String?),
         createdAt: (data['created_at'] as Timestamp?)?.toDate().toUtc(),
       );

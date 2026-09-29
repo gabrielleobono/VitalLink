@@ -45,7 +45,9 @@ class BloodRequest {
       requesterId: requesterId,
       city: city,
       bloodGroupNeeded: bloodGroupNeeded,
-      compatibleGroups: BloodCompatibility.notificationPriorityFor(bloodGroupNeeded),
+      compatibleGroups: BloodCompatibility.notificationPriorityFor(
+        bloodGroupNeeded,
+      ),
       hospitalId: hospitalId,
       hospitalDepartment: hospitalDepartment,
       urgency: urgency,

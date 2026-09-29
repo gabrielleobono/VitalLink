@@ -32,8 +32,14 @@ class HomeShell extends StatelessWidget {
           elevation: 0,
           selectedItemColor: AppColors.primary,
           unselectedItemColor: AppColors.navInactive,
-          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
-          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+          selectedLabelStyle: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 12,
+          ),
+          unselectedLabelStyle: const TextStyle(
+            fontWeight: FontWeight.w500,
+            fontSize: 12,
+          ),
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.home_outlined),

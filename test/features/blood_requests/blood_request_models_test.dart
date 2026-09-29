@@ -1,4 +1,4 @@
-﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:vitallink/core/utils/blood_compatibility.dart';
 import 'package:vitallink/features/blood_requests/data/models/blood_request_model.dart';
 import 'package:vitallink/features/blood_requests/data/models/pledge_model.dart';
@@ -8,18 +8,21 @@ import 'package:vitallink/features/blood_requests/domain/pledge.dart';
 
 void main() {
   group('BloodRequest', () {
-    test('create() dÃ©duit les groupes compatibles, mÃªme groupe en premier', () {
-      final r = BloodRequest.create(
-        id: 'r1',
-        requesterId: 'u1',
-        city: 'Brazzaville',
-        bloodGroupNeeded: BloodGroup.aNegative,
-        hospitalId: 'h1',
-      );
-      expect(r.compatibleGroups.map((g) => g.label), ['A-', 'O-']);
-      expect(r.status, RequestStatus.open);
-      expect(r.isMedicallyVerified, isFalse);
-    });
+    test(
+      'create() dÃ©duit les groupes compatibles, mÃªme groupe en premier',
+      () {
+        final r = BloodRequest.create(
+          id: 'r1',
+          requesterId: 'u1',
+          city: 'Brazzaville',
+          bloodGroupNeeded: BloodGroup.aNegative,
+          hospitalId: 'h1',
+        );
+        expect(r.compatibleGroups.map((g) => g.label), ['A-', 'O-']);
+        expect(r.status, RequestStatus.open);
+        expect(r.isMedicallyVerified, isFalse);
+      },
+    );
 
     test('unitsRemaining ne descend jamais sous 0', () {
       const r = BloodRequest(

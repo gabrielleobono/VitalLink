@@ -17,9 +17,9 @@ enum UrgencyLevel {
 
   /// Valeur inconnue -> `high` (on préfère sur-signaler que sous-signaler).
   static UrgencyLevel fromWire(String? value) => UrgencyLevel.values.firstWhere(
-        (e) => e.wire == value,
-        orElse: () => UrgencyLevel.high,
-      );
+    (e) => e.wire == value,
+    orElse: () => UrgencyLevel.high,
+  );
 }
 
 /// Statut d'une alerte (spec : `request_status`).
@@ -35,10 +35,8 @@ enum RequestStatus {
 
   /// Valeur inconnue -> `closed` (une alerte illisible n'est jamais affichée
   /// comme ouverte).
-  static RequestStatus fromWire(String? value) => RequestStatus.values.firstWhere(
-        (e) => e.wire == value,
-        orElse: () => RequestStatus.closed,
-      );
+  static RequestStatus fromWire(String? value) => RequestStatus.values
+      .firstWhere((e) => e.wire == value, orElse: () => RequestStatus.closed);
 }
 
 /// Statut d'un engagement de donneur (spec : `pledge_status`).
@@ -55,9 +53,9 @@ enum PledgeStatus {
 
   /// Valeur inconnue -> `cancelled` (n'est jamais compté comme un donneur).
   static PledgeStatus fromWire(String? value) => PledgeStatus.values.firstWhere(
-        (e) => e.wire == value,
-        orElse: () => PledgeStatus.cancelled,
-      );
+    (e) => e.wire == value,
+    orElse: () => PledgeStatus.cancelled,
+  );
 }
 
 /// Délai d'arrivée estimé choisi dans le bottom sheet « Je viens donner ».
