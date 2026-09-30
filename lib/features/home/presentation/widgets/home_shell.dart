@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_palette.dart';
 
 /// Coquille de navigation principale (Accueil / Urgences / Pharmacies /
 /// Profil), reprise de la bottom nav des maquettes Figma : icône simple
@@ -14,12 +15,13 @@ class HomeShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Scaffold(
       body: navigationShell,
       bottomNavigationBar: DecoratedBox(
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
-          border: Border(top: BorderSide(color: AppColors.border)),
+        decoration: BoxDecoration(
+          color: palette.surface,
+          border: Border(top: BorderSide(color: palette.border)),
         ),
         child: BottomNavigationBar(
           currentIndex: navigationShell.currentIndex,
@@ -28,10 +30,10 @@ class HomeShell extends StatelessWidget {
             initialLocation: index == navigationShell.currentIndex,
           ),
           type: BottomNavigationBarType.fixed,
-          backgroundColor: AppColors.surface,
+          backgroundColor: palette.surface,
           elevation: 0,
           selectedItemColor: AppColors.primary,
-          unselectedItemColor: AppColors.navInactive,
+          unselectedItemColor: palette.navInactive,
           selectedLabelStyle: const TextStyle(
             fontWeight: FontWeight.w600,
             fontSize: 12,
