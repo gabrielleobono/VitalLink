@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../core/theme/app_palette.dart';
 import '../domain/prescription_scan.dart';
 import 'scan_controller.dart';
 import 'scan_state.dart';
@@ -17,15 +18,16 @@ class ScanScreen extends ConsumerWidget {
     final currentMedicineName = scanState.editedMedicineName.isNotEmpty
         ? scanState.editedMedicineName
         : (scanState.scanResult?.medicineName ?? '');
+    final palette = context.palette;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: palette.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
+        backgroundColor: palette.surface,
+        surfaceTintColor: palette.surface,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF0F172A)),
+          icon: Icon(Icons.arrow_back, color: palette.textPrimary),
           onPressed: () => Navigator.of(context).maybePop(),
         ),
         titleSpacing: 0,
@@ -40,10 +42,10 @@ class ScanScreen extends ConsumerWidget {
               child: const Icon(Icons.add, color: Colors.white, size: 18),
             ),
             const SizedBox(width: 10),
-            const Text(
+            Text(
               'Scan d\'ordonnance',
               style: TextStyle(
-                color: Color(0xFF0F172A),
+                color: palette.textPrimary,
                 fontWeight: FontWeight.w700,
                 fontSize: 18,
               ),
@@ -73,13 +75,14 @@ class ScanScreen extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _buildUploadCard(scanState, controller),
+                    _buildUploadCard(palette, scanState, controller),
                     const SizedBox(height: 16),
 
-                    if (scanState.isLoading) _buildLoadingIndicator(),
+                    if (scanState.isLoading) _buildLoadingIndicator(palette),
 
                     if (scanState.isSuccess && scanState.scanResult != null)
                       _buildResultCard(
+                        palette: palette,
                         scanState: scanState,
                         controller: controller,
                         result: scanState.scanResult!,
@@ -97,37 +100,41 @@ class ScanScreen extends ConsumerWidget {
             ),
 
             if (scanState.isSuccess && scanState.scanResult != null)
-              _buildBottomBar(context, currentMedicineName),
+              _buildBottomBar(context, palette, currentMedicineName),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildUploadCard(ScanState scanState, ScanController controller) {
+  Widget _buildUploadCard(
+    AppPalette palette,
+    ScanState scanState,
+    ScanController controller,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: palette.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: palette.border),
       ),
       child: Column(
         children: [
-          const Text(
+          Text(
             'Prenez en photo votre ordonnance',
             style: TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF0F172A),
+              color: palette.textPrimary,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'L\'IA extrait automatiquement la\ndénomination, le dosage et la posologie.',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Color(0xFF64748B),
+              color: palette.textSecondary,
               fontSize: 13,
               height: 1.35,
             ),
@@ -159,30 +166,30 @@ class ScanScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildLoadingIndicator() {
+  Widget _buildLoadingIndicator(AppPalette palette) {
     return Container(
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: palette.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: palette.border),
       ),
-      child: const Column(
+      child: Column(
         children: [
-          CircularProgressIndicator(color: Color(0xFFDC2626)),
-          SizedBox(height: 16),
+          const CircularProgressIndicator(color: Color(0xFFDC2626)),
+          const SizedBox(height: 16),
           Text(
             'Analyse de l\'ordonnance en cours...',
             style: TextStyle(
-              color: Color(0xFF0F172A),
+              color: palette.textPrimary,
               fontWeight: FontWeight.w600,
               fontSize: 14,
             ),
           ),
-          SizedBox(height: 4),
+          const SizedBox(height: 4),
           Text(
             'Extraction des données médicales par l\'IA',
-            style: TextStyle(color: Color(0xFF64748B), fontSize: 12),
+            style: TextStyle(color: palette.textSecondary, fontSize: 12),
           ),
         ],
       ),
@@ -190,6 +197,7 @@ class ScanScreen extends ConsumerWidget {
   }
 
   Widget _buildResultCard({
+    required AppPalette palette,
     required ScanState scanState,
     required ScanController controller,
     required PrescriptionScan result,
@@ -198,9 +206,9 @@ class ScanScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: palette.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: palette.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -252,20 +260,20 @@ class ScanScreen extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: 6),
-                    const Text(
+                    Text(
                       'MÉDICAMENT DÉTECTÉ PAR L\'IA',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF0F172A),
+                        color: palette.textPrimary,
                         letterSpacing: 0.3,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Indice de confiance : ${(result.confidence * 100).toStringAsFixed(1)}%',
-                      style: const TextStyle(
-                        color: Color(0xFF475569),
+                      style: TextStyle(
+                        color: palette.textSecondary,
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),
@@ -276,12 +284,12 @@ class ScanScreen extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 18),
-          const Text(
+          Text(
             'Libellé pharmaceutique vérifiable',
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF475569),
+              color: palette.textSecondary,
             ),
           ),
           const SizedBox(height: 8),
@@ -307,15 +315,15 @@ class ScanScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 8),
-          const Row(
+          Row(
             children: [
-              Icon(Icons.info, size: 14, color: Color(0xFF3B82F6)),
-              SizedBox(width: 6),
+              const Icon(Icons.info, size: 14, color: Color(0xFF3B82F6)),
+              const SizedBox(width: 6),
               Expanded(
                 child: Text(
                   'L\'IA assiste la saisie. Vérifiez le nom avant la recherche.',
                   style: TextStyle(
-                    color: Color(0xFF475569),
+                    color: palette.textSecondary,
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
                   ),
@@ -457,12 +465,16 @@ class ScanScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildBottomBar(BuildContext context, String currentMedicineName) {
+  Widget _buildBottomBar(
+    BuildContext context,
+    AppPalette palette,
+    String currentMedicineName,
+  ) {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: Color(0xFFE2E8F0))),
+      decoration: BoxDecoration(
+        color: palette.surface,
+        border: Border(top: BorderSide(color: palette.border)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -496,9 +508,9 @@ class ScanScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Trouver les officines de garde à contacter',
-            style: TextStyle(color: Color(0xFF64748B), fontSize: 12),
+            style: TextStyle(color: palette.textSecondary, fontSize: 12),
           ),
         ],
       ),

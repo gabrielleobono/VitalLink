@@ -3,320 +3,398 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/services/launcher_service.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/utils/blood_compatibility.dart';
-import '../../data/models/blood_request_model.dart';
-import '../../data/models/hospital_model.dart';
-import '../providers/blood_request_providers.dart';
-import '../providers/hospital_providers.dart';
-import '../widgets/badges.dart';
-import '../widgets/engagement_bottom_sheet.dart';
+import '../../../../core/theme/app_palette.dart';
+import '../../../home/data/models/blood_alert.dart';
+import '../../../home/presentation/providers/blood_alert_provider.dart';
+import '../providers/hospital_provider.dart';
+import '../widgets/confirm_donation_sheet.dart';
 
-/// Écran Détail d'une alerte : groupe, poches restantes, hôpital, appel et
-/// itinéraire Maps.
-///
-/// N'affiche et n'appelle jamais le numéro de la famille : seul le numéro
-/// institutionnel de l'hôpital ([Hospital.emergencyPhone]) est exposé ici.
+/// Écran "Détails de l'urgence" — ouvert depuis une carte d'alerte du Home.
 class EmergencyDetailScreen extends ConsumerWidget {
-  const EmergencyDetailScreen({super.key, required this.requestId});
+  const EmergencyDetailScreen({super.key, required this.alertId});
 
-  final String requestId;
+  final String alertId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final requestAsync = ref.watch(bloodRequestByIdProvider(requestId));
+    final palette = context.palette;
+    final alertAsync = ref.watch(bloodAlertByIdProvider(alertId));
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Détail de l'alerte")),
-      body: requestAsync.when(
-        data: (request) => _DetailBody(request: request),
+      backgroundColor: palette.background,
+      appBar: AppBar(
+        backgroundColor: palette.surface,
+        elevation: 0,
+        title: Text(
+          "Détails de l'urgence",
+          style: TextStyle(
+            color: palette.textPrimary,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.share_outlined, color: palette.textPrimary),
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Partage bientôt disponible.')),
+              );
+            },
+          ),
+        ],
+      ),
+      body: alertAsync.when(
+        data: (alert) {
+          if (alert == null) {
+            return Center(
+              child: Text(
+                'Cette alerte n\'existe plus.',
+                style: TextStyle(color: palette.textSecondary),
+              ),
+            );
+          }
+          return _EmergencyDetailBody(alert: alert);
+        },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stackTrace) => const _CenteredMessage(
-          message: "Cette alerte est introuvable ou a été retirée.",
+        error: (error, _) => Center(
+          child: Text(
+            'Erreur de chargement : $error',
+            style: TextStyle(color: palette.textSecondary),
+          ),
         ),
       ),
     );
   }
 }
 
-class _DetailBody extends ConsumerWidget {
-  const _DetailBody({required this.request});
+class _EmergencyDetailBody extends ConsumerWidget {
+  const _EmergencyDetailBody({required this.alert});
 
-  final BloodRequestModel request;
+  final BloodAlert alert;
+
+  static const _requirements = [
+    'Âge 18-65 ans',
+    'Poids ≥ 50 kg',
+    'Dernier don ≥ 90 jours',
+    "Carte nationale d'identité",
+  ];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final hospitalAsync = ref.watch(hospitalByIdProvider(request.hospitalId));
-    final progress = request.unitsNeeded > 0
-        ? request.unitsPledged / request.unitsNeeded
-        : 0.0;
+    final palette = context.palette;
+    final hospitalAsync = ref.watch(hospitalProvider(alert.hospitalId));
+    final isVerified = alert.alertBadgeVariant == 'verified';
+    final headline = alert.criticality == 'critical'
+        ? '${alert.units} poche${alert.units > 1 ? 's' : ''} requise${alert.units > 1 ? 's' : ''} en urgence absolue'
+        : alert.ctaSubtitleText;
+    final shortCode =
+        '#VL-${alert.id.length >= 4 ? alert.id.substring(alert.id.length - 4).toUpperCase() : alert.id.toUpperCase()}';
 
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
       children: [
-        Row(
-          children: [
-            _BloodGroupBadge(label: request.bloodGroupNeeded.label),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: palette.surface,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: palette.border),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    request.city,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 18,
-                      color: AppColors.textPrimary,
+                  Container(
+                    width: 56,
+                    height: 56,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryRed,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          'GROUPE',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 8,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        Text(
+                          alert.recipientBloodGroup,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 6),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 4,
-                    children: [
-                      UrgencyChip(urgency: request.urgency),
-                      VerificationBadge(
-                        isVerified: request.isMedicallyVerified,
-                      ),
-                    ],
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isVerified
+                                ? AppColors.tealLight
+                                : AppColors.softBlue,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            alert.alertBadgeLabel,
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: isVerified
+                                  ? AppColors.tealPrimary
+                                  : AppColors.info,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          headline,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: palette.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${alert.district} • ${alert.distanceKm.toStringAsFixed(1)} km de votre position',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: palette.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
-            ),
-          ],
+              const Divider(height: 20),
+              Text(
+                'Posté ${alert.relativeCreatedAt.toLowerCase()}',
+                style: TextStyle(fontSize: 12, color: palette.textSecondary),
+              ),
+            ],
+          ),
         ),
-        const SizedBox(height: 20),
-        Card(
-          child: Padding(
+        const SizedBox(height: 12),
+        hospitalAsync.when(
+          data: (hospital) => Container(
             padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: palette.surface,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: palette.border),
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Poches de sang',
-                      style: TextStyle(fontWeight: FontWeight.w600),
+                Text(
+                  alert.hospitalName,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: palette.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  alert.serviceInfo,
+                  style: TextStyle(fontSize: 13, color: palette.textSecondary),
+                ),
+                if (hospital != null)
+                  Text(
+                    '${hospital.address} • ${hospital.city}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: palette.textSecondary,
                     ),
-                    Text(
-                      '${request.unitsPledged}/${request.unitsNeeded}',
-                      style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: hospital == null
+                            ? null
+                            : () => LauncherService.callPhone(hospital.phone),
+                        icon: const Icon(Icons.call, size: 16),
+                        label: const Text("Appeler l'hôpital"),
+                        style: OutlinedButton.styleFrom(
+                          backgroundColor: AppColors.darkSlate,
+                          foregroundColor: Colors.white,
+                          side: BorderSide.none,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: hospital == null
+                            ? null
+                            : () => LauncherService.openMapsDirections(
+                                latitude: hospital.location.latitude,
+                                longitude: hospital.location.longitude,
+                              ),
+                        icon: const Icon(Icons.directions, size: 16),
+                        label: const Text('Itinéraire Maps'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: palette.textPrimary,
+                          side: BorderSide(color: palette.border),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 10),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(999),
-                  child: LinearProgressIndicator(
-                    value: progress.clamp(0, 1),
-                    minHeight: 8,
-                    backgroundColor: AppColors.border,
-                    valueColor: const AlwaysStoppedAnimation(AppColors.primary),
-                  ),
-                ),
-                if (request.unitsRemaining > 0) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    '${request.unitsRemaining} poche(s) encore recherchée(s)',
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 13,
-                    ),
-                  ),
-                ],
-                if (request.isOpen && !request.isFullyPledged) ...[
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: () async {
-                        final confirmed = await showEngagementBottomSheet(
-                          context,
-                          requestId: request.id,
-                        );
-                        if (confirmed == true && context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Engagement enregistré, merci !'),
-                            ),
-                          );
-                        }
-                      },
-                      icon: const Icon(
-                        Icons.volunteer_activism_rounded,
-                        size: 18,
-                      ),
-                      label: const Text('Je viens donner'),
-                    ),
-                  ),
-                ],
               ],
             ),
           ),
+          loading: () => const Padding(
+            padding: EdgeInsets.all(16),
+            child: Center(child: CircularProgressIndicator()),
+          ),
+          error: (_, _) => const SizedBox.shrink(),
         ),
-        if (request.notes case final notes? when notes.isNotEmpty) ...[
-          const SizedBox(height: 16),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Notes',
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    notes,
-                    style: const TextStyle(color: AppColors.textSecondary),
-                  ),
-                ],
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: palette.surface,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: palette.border),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${alert.units} poche${alert.units > 1 ? 's' : ''} nécessaire${alert.units > 1 ? 's' : ''}',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: palette.textPrimary,
+                ),
               ),
-            ),
-          ),
-        ],
-        const SizedBox(height: 16),
-        hospitalAsync.when(
-          data: (hospital) => _HospitalCard(
-            hospital: hospital,
-            department: request.hospitalDepartment,
-          ),
-          loading: () => const Card(
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: Center(child: CircularProgressIndicator()),
-            ),
-          ),
-          error: (error, stackTrace) => const Card(
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: Text(
-                "Informations de l'hôpital indisponibles pour le moment.",
-                style: TextStyle(color: AppColors.textSecondary),
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.softBlue.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text.rich(
+                  TextSpan(
+                    style: TextStyle(fontSize: 12, color: palette.textPrimary),
+                    children: [
+                      const TextSpan(text: 'Présentez-vous directement à la '),
+                      TextSpan(
+                        text: alert.hospitalName,
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                      const TextSpan(text: ' en mentionnant l\'alerte '),
+                      TextSpan(
+                        text: shortCode,
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                      const TextSpan(text: ' pour un accueil prioritaire.'),
+                    ],
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(height: 12),
+              Text(
+                'CONDITIONS REQUISES',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: palette.textSecondary,
+                  letterSpacing: 0.4,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: _requirements
+                    .map(
+                      (req) => Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: palette.background,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: palette.border),
+                        ),
+                        child: Text(
+                          req,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: palette.textSecondary,
+                          ),
+                        ),
+                      ),
+                    )
+                    .toList(),
+              ),
+            ],
           ),
+        ),
+        const SizedBox(height: 20),
+        ElevatedButton(
+          onPressed: () {
+            final hospital = hospitalAsync.value;
+            showConfirmDonationSheet(
+              context: context,
+              alert: alert,
+              hospital: hospital,
+            );
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: Colors.white,
+            minimumSize: const Size.fromHeight(52),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+            elevation: 0,
+          ),
+          child: const Text(
+            "Je viens donner (M'engager)",
+            style: TextStyle(fontWeight: FontWeight.w700),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          "Votre engagement informe immédiatement l'équipe médicale de garde.",
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 11, color: palette.textSecondary),
         ),
       ],
-    );
-  }
-}
-
-class _HospitalCard extends StatelessWidget {
-  const _HospitalCard({required this.hospital, required this.department});
-
-  final HospitalModel hospital;
-  final String? department;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(
-                  Icons.local_hospital_rounded,
-                  color: AppColors.primary,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    department != null
-                        ? '${hospital.name} · $department'
-                        : hospital.name,
-                    style: const TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Text(
-              '${hospital.address}, ${hospital.city}',
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 13,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () =>
-                        LauncherService.callPhone(hospital.emergencyPhone),
-                    icon: const Icon(Icons.call_rounded, size: 18),
-                    label: const Text('Appeler'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () => LauncherService.openMapsDirections(
-                      latitude: hospital.latitude,
-                      longitude: hospital.longitude,
-                    ),
-                    icon: const Icon(Icons.directions_rounded, size: 18),
-                    label: const Text('Itinéraire'),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _BloodGroupBadge extends StatelessWidget {
-  const _BloodGroupBadge({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 56,
-      height: 56,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          color: AppColors.primary,
-          fontWeight: FontWeight.w700,
-          fontSize: 18,
-        ),
-      ),
-    );
-  }
-}
-
-class _CenteredMessage extends StatelessWidget {
-  const _CenteredMessage({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Text(
-          message,
-          textAlign: TextAlign.center,
-          style: const TextStyle(color: AppColors.textSecondary),
-        ),
-      ),
     );
   }
 }

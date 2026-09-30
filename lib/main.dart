@@ -1,6 +1,6 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 import 'core/router/app_router.dart';
 import 'core/services/firestore_offline_config.dart';
@@ -22,7 +22,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp.router(
       title: 'VitalLink',
       theme: AppTheme.light(),
+      darkTheme: AppTheme.dark(),
+      themeMode: ThemeMode.system,
       routerConfig: appRouter,
+      debugShowCheckedModeBanner: false,
     );
   }
 }

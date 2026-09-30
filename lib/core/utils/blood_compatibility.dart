@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import '../theme/app_palette.dart';
 
 /// Les 8 groupes sanguins (système ABO + Rhésus).
 enum BloodGroup {
@@ -109,45 +110,46 @@ class CompatibilityTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Table(
-      border: TableBorder.all(color: AppColors.border),
+      border: TableBorder.all(color: palette.border),
       columnWidths: const {0: FixedColumnWidth(64), 1: FlexColumnWidth()},
       children: [
-        _headerRow(),
-        for (final receiver in BloodGroup.values) _row(receiver),
+        _headerRow(palette),
+        for (final receiver in BloodGroup.values) _row(receiver, palette),
       ],
     );
   }
 
-  TableRow _headerRow() {
+  TableRow _headerRow(AppPalette palette) {
     return TableRow(
-      decoration: const BoxDecoration(color: AppColors.background),
-      children: const [
-        _Cell('Receveur', bold: true),
-        _Cell('Peut recevoir de', bold: true),
+      decoration: BoxDecoration(color: palette.background),
+      children: [
+        _Cell('Receveur', bold: true, color: palette.textPrimary),
+        _Cell('Peut recevoir de', bold: true, color: palette.textPrimary),
       ],
     );
   }
 
-  TableRow _row(BloodGroup receiver) {
+  TableRow _row(BloodGroup receiver, AppPalette palette) {
     final donors = BloodCompatibility.compatibleDonorsFor(
       receiver,
     ).map((g) => g.label).join(', ');
     return TableRow(
       children: [
         _Cell(receiver.label, bold: true, color: AppColors.primary),
-        _Cell(donors),
+        _Cell(donors, color: palette.textPrimary),
       ],
     );
   }
 }
 
 class _Cell extends StatelessWidget {
-  const _Cell(this.text, {this.bold = false, this.color});
+  const _Cell(this.text, {required this.color, this.bold = false});
 
   final String text;
   final bool bold;
-  final Color? color;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
@@ -157,7 +159,7 @@ class _Cell extends StatelessWidget {
         text,
         style: TextStyle(
           fontWeight: bold ? FontWeight.w700 : FontWeight.w400,
-          color: color ?? AppColors.textPrimary,
+          color: color,
         ),
       ),
     );
