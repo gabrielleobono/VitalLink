@@ -68,21 +68,6 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
     });
 
     try {
-      var isVerified = false;
-      try {
-        final profile = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .get();
-        final profileData = profile.data();
-        isVerified =
-            profileData != null &&
-            profileData['role'] == 'medical_staff' &&
-            profileData['verified'] == true;
-      } catch (_) {
-        isVerified = false;
-      }
-
       final compatible = BloodCompatibility.compatibleDonorsFor(
         bloodGroup,
       ).map((g) => g.label).toList();
@@ -106,10 +91,8 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
             'serviceInfo': _departmentController.text.trim(),
             'district': hospital.city,
             'distanceKm': 0,
-            'alertBadgeLabel': isVerified
-                ? 'Alerte vérifiée'
-                : 'Alerte famille',
-            'alertBadgeVariant': isVerified ? 'verified' : 'community',
+            'alertBadgeLabel': 'Alerte citoyenne',
+            'alertBadgeVariant': 'community',
             'bloodGroupTagLabel': bloodGroup.label,
             'ctaSubtitleText': '$_unitsNeeded poche(s) · ${hospital.name}',
           });
