@@ -68,6 +68,21 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
     });
 
     try {
+      var isVerified = false;
+      try {
+        final profile = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+        final profileData = profile.data();
+        isVerified =
+            profileData != null &&
+            profileData['role'] == 'medical_staff' &&
+            profileData['verified'] == true;
+      } catch (_) {
+        isVerified = false;
+      }
+
       final compatible = BloodCompatibility.compatibleDonorsFor(
         bloodGroup,
       ).map((g) => g.label).toList();
@@ -91,8 +106,10 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
             'serviceInfo': _departmentController.text.trim(),
             'district': hospital.city,
             'distanceKm': 0,
-            'alertBadgeLabel': 'Alerte vérifiée',
-            'alertBadgeVariant': 'verified',
+            'alertBadgeLabel': isVerified
+                ? 'Alerte vérifiée'
+                : 'Alerte famille',
+            'alertBadgeVariant': isVerified ? 'verified' : 'community',
             'bloodGroupTagLabel': bloodGroup.label,
             'ctaSubtitleText': '$_unitsNeeded poche(s) · ${hospital.name}',
           });
@@ -104,7 +121,7 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
       setState(() {
         _isSubmitting = false;
         _errorMessage = error.code == 'permission-denied'
-            ? 'Seuls les soignants vérifiés peuvent publier une alerte.'
+            ? 'Publication refusée : droits insuffisants. Réessayez plus tard.'
             : 'La publication a échoué. Vérifiez votre connexion et réessayez.';
       });
     } catch (_) {
