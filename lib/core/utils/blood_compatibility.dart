@@ -130,9 +130,9 @@ class CompatibilityTable extends StatelessWidget {
   }
 
   TableRow _row(BloodGroup receiver) {
-    final donors = BloodCompatibility.compatibleDonorsFor(receiver)
-        .map((g) => g.label)
-        .join(', ');
+    final donors = BloodCompatibility.compatibleDonorsFor(
+      receiver,
+    ).map((g) => g.label).join(', ');
     return TableRow(
       children: [
         _Cell(receiver.label, bold: true, color: AppColors.primary),
