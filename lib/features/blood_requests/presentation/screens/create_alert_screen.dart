@@ -93,6 +93,7 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
             'distanceKm': 0,
             'alertBadgeLabel': 'Alerte citoyenne',
             'alertBadgeVariant': 'citizen',
+            'source': 'citizen',
             'bloodGroupTagLabel': bloodGroup.label,
             'ctaSubtitleText': '$_unitsNeeded poche(s) · ${hospital.name}',
           });
