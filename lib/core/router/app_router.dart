@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 
 import '../../features/auth/presentation/screens/login_screen.dart';
+import '../../features/blood_requests/presentation/screens/create_alert_screen.dart';
 import '../../features/blood_requests/presentation/screens/emergency_detail_screen.dart';
 import '../../features/blood_requests/presentation/screens/emergency_screen.dart';
 import '../../features/home/presentation/screens/dashboard_screen.dart';
@@ -18,6 +19,7 @@ abstract final class AppRoutes {
   static const profile = '/profile';
   static const scan = '/scan';
 
+  static const createEmergency = '/emergencies/new';
   static String emergencyDetail(String alertId) => '/emergencies/$alertId';
 }
 
@@ -31,6 +33,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.scan,
       builder: (context, state) => const ScanScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.createEmergency,
+      builder: (context, state) => const CreateAlertScreen(),
     ),
     GoRoute(
       path: '/emergencies/:alertId',
