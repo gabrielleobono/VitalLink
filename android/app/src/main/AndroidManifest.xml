@@ -1,16 +1,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-
     <!-- Connexion Internet (API Rodium, Firestore, Cloud) -->
     <uses-permission android:name="android.permission.INTERNET"/>
+
+    <!-- Géolocalisation des pharmacies et alertes urgentes -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 
     <!-- Scan d'ordonnance : caméra et galerie -->
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32"/>
-
-    <!-- Géolocalisation des pharmacies et alertes urgentes -->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 
     <application
         android:label="vitallink"
@@ -38,28 +37,10 @@
             android:name="flutterEmbedding"
             android:value="2" />
     </application>
-
     <queries>
-        <intent>
-            <action android:name="android.intent.action.DIAL" />
-            <data android:scheme="tel" />
-        </intent>
-        <intent>
-            <action android:name="android.intent.action.VIEW" />
-            <data android:scheme="https" />
-        </intent>
-        <intent>
-            <action android:name="android.intent.action.VIEW" />
-            <data android:scheme="geo" />
-        </intent>
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
-        </intent>
-        <!-- Visibilité du composeur téléphonique pour LauncherService (Android 11+). -->
-        <intent>
-            <action android:name="android.intent.action.VIEW"/>
-            <data android:scheme="tel"/>
         </intent>
     </queries>
 </manifest>
