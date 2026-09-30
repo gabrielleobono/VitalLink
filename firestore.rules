@@ -1,0 +1,111 @@
+rules_version = '2';
+
+// Règles de sécurité Firestore — voir CONTEXT.md > "Sécurité (Firestore Rules)".
+//
+// Le rôle et le statut "vérifié" d'un utilisateur sont stockés dans son
+// document users/{uid} (pas de custom claims au MVP), donc chaque règle qui
+// en a besoin va lire ce document via get().
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function userDoc(uid) {
+      return get(/databases/$(database)/documents/users/$(uid)).data;
+    }
+
+    function hasRole(uid, role) {
+      return isSignedIn() && userDoc(uid).role == role;
+    }
+
+    function isVerified(uid) {
+      return isSignedIn() && userDoc(uid).verified == true;
+    }
+
+    function isVerifiedMedicalStaff() {
+      return hasRole(request.auth.uid, 'medical_staff') && isVerified(request.auth.uid);
+    }
+
+    function isVerifiedPharmacist() {
+      return hasRole(request.auth.uid, 'pharmacist') && isVerified(request.auth.uid);
+    }
+
+    // --- users/{uid} : chacun ne lit/écrit que son propre profil. ---
+    match /users/{uid} {
+      allow read, write: if isOwner(uid);
+    }
+
+    // --- donors/{uid} : jamais listable, chacun ne lit/écrit que le sien. ---
+    // Les Cloud Functions (Admin SDK) contournent ces règles pour le matching.
+    match /donors/{uid} {
+      allow get: if isOwner(uid);
+      allow list: if false;
+      allow write: if isOwner(uid);
+    }
+
+    // --- hospitals/{id} : lecture publique (même invité), écriture réservée
+    // à l'admin/aux Cloud Functions (pas de client autorisé au MVP). ---
+    match /hospitals/{id} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // --- medicines/{id} : lecture publique, écriture réservée à
+    // l'admin/aux scripts de seed (pas de client autorisé au MVP). ---
+    match /medicines/{id} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // --- pharmacies/{id} : lecture publique ; seul le pharmacien vérifié
+    // propriétaire (ownerUid) peut modifier sa fiche. ---
+    match /pharmacies/{id} {
+      allow read: if true;
+      allow create: if isVerifiedPharmacist() && request.resource.data.ownerUid == request.auth.uid;
+      allow update, delete: if isVerifiedPharmacist() && resource.data.ownerUid == request.auth.uid;
+
+      // --- stock/{medicineId} : lecture publique ; écriture réservée au
+      // pharmacien vérifié propriétaire de la pharmacie parente. ---
+      match /stock/{medicineId} {
+        allow read: if true;
+        allow write: if isVerifiedPharmacist() &&
+            get(/databases/$(database)/documents/pharmacies/$(id)).data.ownerUid == request.auth.uid;
+      }
+    }
+
+    // --- bloodAlerts/{id} : lecture publique (les urgences à proximité sont
+    // visibles même en mode invité, cf. Figma "Accueil"). Seul un
+    // medical_staff vérifié peut créer une alerte, et seul son créateur peut
+    // la modifier. Aucune donnée nominative du patient ne doit être stockée. ---
+    match /bloodAlerts/{id} {
+      allow read: if true;
+      allow create: if isVerifiedMedicalStaff() &&
+          request.resource.data.createdBy == request.auth.uid &&
+          !('patientName' in request.resource.data) &&
+          !('patientFullName' in request.resource.data);
+      allow update: if isSignedIn() && resource.data.createdBy == request.auth.uid;
+      allow delete: if false;
+
+      // --- responses/{donorUid} : le donneur gère sa propre réponse
+      // ("Je viens donner"). Le créateur de l'alerte peut aussi la modifier
+      // (pour marquer "Don reçu") et lire toutes les réponses de son alerte.
+      match /responses/{donorUid} {
+        function isAlertCreator() {
+          return isSignedIn() &&
+              get(/databases/$(database)/documents/bloodAlerts/$(id)).data.createdBy == request.auth.uid;
+        }
+
+        allow get: if isOwner(donorUid) || isAlertCreator();
+        allow list: if isAlertCreator();
+        allow create, update: if isOwner(donorUid) || isAlertCreator();
+        allow delete: if false;
+      }
+    }
+  }
+}
