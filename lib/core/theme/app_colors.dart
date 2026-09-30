@@ -1,21 +1,27 @@
 import 'package:flutter/material.dart';
 
-/// Palette basée sur les maquettes Figma VitalLink (rouge médical / urgence).
+/// Palette de couleurs VitalLink unifiée (Figma & modules métier).
 abstract final class AppColors {
-  /// Rouge de marque exact, relevé dans les métadonnées du fichier Figma
-  /// ("Brand logo. - Primary color: #dc2626").
-  static const primary = Color(0xFFDC2626);
-  static const primaryDark = Color(0xFFB71C1C);
-  static const background = Color(0xFFF7F7FA);
-  static const surface = Colors.white;
-  static const textPrimary = Color(0xFF1A1A1A);
-  static const textSecondary = Color(0xFF6B7280);
-  static const border = Color(0xFFE5E7EB);
-  static const success = Color(0xFF2E7D32);
-  static const warning = Color(0xFFF59E0B);
-  static const info = Color(0xFF2F80ED);
+  // --- Couleurs de base & Figma (Module 1 / Socle) ---
+  static const Color primary = Color(0xFFDC2626);
+  static const Color primaryDark = Color(0xFFB71C1C);
+  static const Color primaryRed = Color(0xFFC91A1A);
+  static const Color darkSlate = Color(0xFF1E293B);
+  static const Color background = Color(0xFFF8FAFC);
+  static const Color surface = Colors.white;
+  static const Color textPrimary = Color(0xFF1E293B);
+  static const Color textSecondary = Color(0xFF64748B);
+  static const Color border = Color(0xFFE2E8F0);
+  static const Color success = Color(0xFF2E7D32);
+  static const Color warning = Color(0xFFF59E0B);
+  static const Color info = Color(0xFF2F80ED);
+  static const Color navInactive = Color(0xFF44403C);
 
-  /// Couleur des icônes/labels inactifs de la bottom nav (gris-brun neutre
-  /// mesuré sur la capture du Figma, pas un gris bleuté classique).
-  static const navInactive = Color(0xFF44403C);
+  // --- Teintes spécifiques pharmacies & badges (Module 3) ---
+  static const Color tealPrimary = Color(0xFF0F766E);
+  static const Color tealLight = Color(0xFFCCFBF1);
+  static const Color tealBadge = Color(0xFF5EEAD4);
+  static const Color softBlue = Color(0xFFE0F2FE);
+  static const Color purpleLight = Color(0xFFF3E8FF);
+  static const Color purpleText = Color(0xFF6B21A8);
 }
