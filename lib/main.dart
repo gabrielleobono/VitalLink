@@ -22,6 +22,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp.router(
       title: 'VitalLink',
       theme: AppTheme.light(),
+      darkTheme: AppTheme.dark(),
+      themeMode: ThemeMode.system,
       routerConfig: appRouter,
       debugShowCheckedModeBanner: false,
     );
