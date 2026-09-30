@@ -30,7 +30,9 @@ class BloodRequest {
   /// Nouvelle alerte : les groupes compatibles sont déduits en Dart (règle
   /// validée en équipe), jamais saisis à la main.
   factory BloodRequest.create({
-    required String id,
+    // Vide tant que Firestore n'a pas généré l'id définitif (voir
+    // BloodRequestRepository.createRequest).
+    String id = '',
     required String requesterId,
     required String city,
     required BloodGroup bloodGroupNeeded,

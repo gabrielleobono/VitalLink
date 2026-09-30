@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../../domain/blood_request.dart';
 import '../../domain/blood_request_enums.dart';
 import '../models/blood_request_model.dart';
 
@@ -42,5 +43,43 @@ class BloodRequestRepository {
   /// Détail : le compteur de poches doit refléter les engagements en direct).
   Stream<BloodRequestModel> watchRequestById(String id) {
     return _collection.doc(id).snapshots().map(BloodRequestModel.fromFirestore);
+  }
+
+  /// Publie une nouvelle alerte, et le numéro de la famille dans un
+  /// sous-document privé (jamais dans le document public de l'alerte).
+  Future<String> createRequest(
+    BloodRequest request, {
+    String? contactPhone,
+  }) async {
+    final docRef = _collection.doc();
+    final model = BloodRequestModel(
+      id: docRef.id,
+      requesterId: request.requesterId,
+      city: request.city,
+      bloodGroupNeeded: request.bloodGroupNeeded,
+      compatibleGroups: request.compatibleGroups,
+      hospitalId: request.hospitalId,
+      hospitalDepartment: request.hospitalDepartment,
+      isMedicallyVerified: request.isMedicallyVerified,
+      urgency: request.urgency,
+      unitsNeeded: request.unitsNeeded,
+      unitsPledged: request.unitsPledged,
+      status: request.status,
+      notes: request.notes,
+      createdAt: request.createdAt,
+    );
+
+    final batch = _firestore.batch();
+    batch.set(docRef, model.toFirestore());
+    if (contactPhone != null && contactPhone.trim().isNotEmpty) {
+      batch.set(
+        docRef.collection('private').doc('contact'),
+        BloodRequestContactModel(
+          contactPhone: contactPhone.trim(),
+        ).toFirestore(),
+      );
+    }
+    await batch.commit();
+    return docRef.id;
   }
 }

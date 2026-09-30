@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -7,8 +7,8 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../blood_requests/presentation/providers/blood_request_providers.dart';
 import '../../../blood_requests/presentation/widgets/blood_request_card.dart';
 
-/// Ã‰cran "Accueil" (Hub) : accÃ¨s rapide Urgence/Pharmacies + fil des alertes
-/// sang ouvertes (les 5 plus urgentes/rÃ©centes).
+/// Écran "Accueil" (Hub) : accès rapide Urgence/Pharmacies + fil des alertes
+/// sang ouvertes (les 5 plus urgentes/récentes).
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
@@ -74,7 +74,9 @@ class DashboardScreen extends ConsumerWidget {
                         padding: const EdgeInsets.only(bottom: 12),
                         child: BloodRequestCard(
                           request: request,
-                          onTap: () => context.push(AppRoutes.emergencyDetail(request.id)),
+                          onTap: () => context.push(
+                            AppRoutes.emergencyDetail(request.id),
+                          ),
                         ),
                       ),
                   ],
@@ -90,6 +92,11 @@ class DashboardScreen extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => context.push(AppRoutes.createEmergency),
+        icon: const Icon(Icons.add),
+        label: const Text('Alerte'),
       ),
     );
   }
@@ -175,7 +182,7 @@ class _FeedError extends StatelessWidget {
             style: TextStyle(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 8),
-          OutlinedButton(onPressed: onRetry, child: const Text('RÃ©essayer')),
+          OutlinedButton(onPressed: onRetry, child: const Text('Réessayer')),
         ],
       ),
     );

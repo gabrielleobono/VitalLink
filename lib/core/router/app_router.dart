@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 
 import '../../features/auth/presentation/screens/login_screen.dart';
+import '../../features/blood_requests/presentation/screens/create_alert_screen.dart';
 import '../../features/blood_requests/presentation/screens/emergency_detail_screen.dart';
 import '../../features/blood_requests/presentation/screens/emergency_screen.dart';
 import '../../features/home/presentation/screens/dashboard_screen.dart';
@@ -18,6 +19,9 @@ abstract final class AppRoutes {
   static const profile = '/profile';
   static const scan = '/scan';
 
+  /// Formulaire de publication d'une nouvelle alerte.
+  static const createEmergency = '$emergencies/new';
+
   /// Détail d'une alerte précise (hors bottom nav, avec bouton retour).
   static String emergencyDetail(String requestId) => '$emergencies/$requestId';
 }
@@ -32,6 +36,12 @@ final appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.scan,
       builder: (context, state) => const ScanScreen(),
+    ),
+    // Route statique déclarée AVANT la route dynamique ':requestId' pour que
+    // "/emergencies/new" ne soit jamais capturé comme un id d'alerte.
+    GoRoute(
+      path: AppRoutes.createEmergency,
+      builder: (context, state) => const CreateAlertScreen(),
     ),
     GoRoute(
       path: AppRoutes.emergencyDetail(':requestId'),

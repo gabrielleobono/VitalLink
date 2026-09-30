@@ -13,3 +13,10 @@ final hospitalByIdProvider = FutureProvider.autoDispose
     .family<HospitalModel, String>((ref, id) {
       return ref.watch(hospitalRepositoryProvider).fetchById(id);
     });
+
+/// Liste complète des hôpitaux, pour le sélecteur du formulaire de création.
+final allHospitalsProvider = FutureProvider.autoDispose<List<HospitalModel>>((
+  ref,
+) {
+  return ref.watch(hospitalRepositoryProvider).fetchAll();
+});

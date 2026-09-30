@@ -21,4 +21,11 @@ class HospitalRepository {
     }
     return HospitalModel.fromFirestore(doc);
   }
+
+  /// Tous les hôpitaux du référentiel, pour le sélecteur du formulaire de
+  /// création d'alerte. Petite liste statique : un simple `get()` suffit.
+  Future<List<HospitalModel>> fetchAll() async {
+    final snapshot = await _collection.orderBy('name').get();
+    return snapshot.docs.map(HospitalModel.fromFirestore).toList();
+  }
 }
