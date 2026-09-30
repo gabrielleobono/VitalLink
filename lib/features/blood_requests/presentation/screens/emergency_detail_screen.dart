@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/services/launcher_service.dart';
@@ -9,12 +9,13 @@ import '../../data/models/hospital_model.dart';
 import '../providers/blood_request_providers.dart';
 import '../providers/hospital_providers.dart';
 import '../widgets/badges.dart';
+import '../widgets/engagement_bottom_sheet.dart';
 
-/// Ã‰cran DÃ©tail d'une alerte : groupe, poches restantes, hÃ´pital, appel et
-/// itinÃ©raire Maps.
+/// Écran Détail d'une alerte : groupe, poches restantes, hôpital, appel et
+/// itinéraire Maps.
 ///
-/// N'affiche et n'appelle jamais le numÃ©ro de la famille : seul le numÃ©ro
-/// institutionnel de l'hÃ´pital ([Hospital.emergencyPhone]) est exposÃ© ici.
+/// N'affiche et n'appelle jamais le numéro de la famille : seul le numéro
+/// institutionnel de l'hôpital ([Hospital.emergencyPhone]) est exposé ici.
 class EmergencyDetailScreen extends ConsumerWidget {
   const EmergencyDetailScreen({super.key, required this.requestId});
 
@@ -25,12 +26,12 @@ class EmergencyDetailScreen extends ConsumerWidget {
     final requestAsync = ref.watch(bloodRequestByIdProvider(requestId));
 
     return Scaffold(
-      appBar: AppBar(title: const Text("DÃ©tail de l'alerte")),
+      appBar: AppBar(title: const Text("Détail de l'alerte")),
       body: requestAsync.when(
         data: (request) => _DetailBody(request: request),
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stackTrace) => const _CenteredMessage(
-          message: "Cette alerte est introuvable ou a Ã©tÃ© retirÃ©e.",
+          message: "Cette alerte est introuvable ou a été retirée.",
         ),
       ),
     );
@@ -117,10 +118,36 @@ class _DetailBody extends ConsumerWidget {
                 if (request.unitsRemaining > 0) ...[
                   const SizedBox(height: 8),
                   Text(
-                    '${request.unitsRemaining} poche(s) encore recherchÃ©e(s)',
+                    '${request.unitsRemaining} poche(s) encore recherchée(s)',
                     style: const TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 13,
+                    ),
+                  ),
+                ],
+                if (request.isOpen && !request.isFullyPledged) ...[
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        final confirmed = await showEngagementBottomSheet(
+                          context,
+                          requestId: request.id,
+                        );
+                        if (confirmed == true && context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Engagement enregistré, merci !'),
+                            ),
+                          );
+                        }
+                      },
+                      icon: const Icon(
+                        Icons.volunteer_activism_rounded,
+                        size: 18,
+                      ),
+                      label: const Text('Je viens donner'),
                     ),
                   ),
                 ],
@@ -166,7 +193,7 @@ class _DetailBody extends ConsumerWidget {
             child: Padding(
               padding: EdgeInsets.all(16),
               child: Text(
-                "Informations de l'hÃ´pital indisponibles pour le moment.",
+                "Informations de l'hôpital indisponibles pour le moment.",
                 style: TextStyle(color: AppColors.textSecondary),
               ),
             ),
@@ -201,7 +228,7 @@ class _HospitalCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     department != null
-                        ? '${hospital.name} Â· $department'
+                        ? '${hospital.name} · $department'
                         : hospital.name,
                     style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
@@ -235,7 +262,7 @@ class _HospitalCard extends StatelessWidget {
                       longitude: hospital.longitude,
                     ),
                     icon: const Icon(Icons.directions_rounded, size: 18),
-                    label: const Text('ItinÃ©raire'),
+                    label: const Text('Itinéraire'),
                   ),
                 ),
               ],
