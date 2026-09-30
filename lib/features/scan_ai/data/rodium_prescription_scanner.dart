@@ -51,7 +51,8 @@ class RodiumPrescriptionScanner implements PrescriptionScanner {
             'content': [
               {
                 'type': 'text',
-                'text': 'Analyse cette ordonnance médicale et identifie le nom exact du médicament, le dosage et la posologie/conditionnement.',
+                'text':
+                    'Analyse cette ordonnance médicale et identifie le nom exact du médicament, le dosage et la posologie/conditionnement.',
               },
               {
                 'type': 'image_url',
