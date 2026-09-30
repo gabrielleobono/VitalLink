@@ -1,21 +1,30 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/providers/auth_providers.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/blood_compatibility.dart';
-import '../../data/models/hospital_model.dart';
-import '../../domain/blood_request.dart';
-import '../../domain/blood_request_enums.dart';
-import '../providers/blood_request_providers.dart';
-import '../providers/hospital_providers.dart';
+import '../../data/models/hospital.dart';
 
-/// Formulaire de publication d'une alerte de sang.
-///
-/// Conçu pour aller vite en situation d'urgence : seuls le groupe sanguin et
-/// l'hôpital sont obligatoires, tout le reste a une valeur par défaut
-/// modifiable. La ville n'est pas saisie à la main : elle est déduite de
-/// l'hôpital choisi, pour ne jamais désynchroniser les deux.
+final _hospitalsListProvider = FutureProvider<List<Hospital>>((ref) async {
+  final snapshot = await FirebaseFirestore.instance
+      .collection('hospitals')
+      .get();
+  return snapshot.docs
+      .map((doc) => Hospital.fromFirestore(doc.id, doc.data()))
+      .toList();
+});
+
+const _criticalities = [
+  ('critical', 'Critique'),
+  ('high', 'Élevée'),
+  ('medium', 'Moyenne'),
+];
+
+/// Formulaire de publication d'une alerte de sang (`bloodAlerts/{id}`).
+/// Réservé aux soignants vérifiés (voir firestore.rules). Aucune donnée
+/// nominative du patient n'est saisie ni stockée.
 class CreateAlertScreen extends ConsumerStatefulWidget {
   const CreateAlertScreen({super.key});
 
@@ -25,12 +34,10 @@ class CreateAlertScreen extends ConsumerStatefulWidget {
 
 class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
   BloodGroup? _bloodGroup;
-  HospitalModel? _hospital;
-  UrgencyLevel _urgency = UrgencyLevel.high;
+  Hospital? _hospital;
+  String _criticality = 'high';
   int _unitsNeeded = 1;
   final _departmentController = TextEditingController();
-  final _notesController = TextEditingController();
-  final _contactPhoneController = TextEditingController();
 
   bool _isSubmitting = false;
   String? _errorMessage;
@@ -38,8 +45,6 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
   @override
   void dispose() {
     _departmentController.dispose();
-    _notesController.dispose();
-    _contactPhoneController.dispose();
     super.dispose();
   }
 
@@ -51,47 +56,70 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
     final hospital = _hospital;
     if (bloodGroup == null || hospital == null) return;
 
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      setState(() => _errorMessage = 'Connectez-vous pour publier une alerte.');
+      return;
+    }
+
     setState(() {
       _isSubmitting = true;
       _errorMessage = null;
     });
 
     try {
-      final requesterId = await ref.read(currentUserIdProvider.future);
-      final request = BloodRequest.create(
-        requesterId: requesterId,
-        city: hospital.city,
-        bloodGroupNeeded: bloodGroup,
-        hospitalId: hospital.id,
-        hospitalDepartment: _departmentController.text.trim().isEmpty
-            ? null
-            : _departmentController.text.trim(),
-        urgency: _urgency,
-        unitsNeeded: _unitsNeeded,
-        notes: _notesController.text.trim().isEmpty
-            ? null
-            : _notesController.text.trim(),
-      );
+      final compatible = BloodCompatibility.compatibleDonorsFor(
+        bloodGroup,
+      ).map((g) => g.label).toList();
 
-      final newId = await ref
-          .read(bloodRequestRepositoryProvider)
-          .createRequest(request, contactPhone: _contactPhoneController.text);
+      final doc = await FirebaseFirestore.instance
+          .collection('bloodAlerts')
+          .add({
+            'recipientBloodGroup': bloodGroup.label,
+            'compatibleGroups': compatible,
+            'units': _unitsNeeded,
+            'criticality': _criticality,
+            'hospitalId': hospital.id,
+            'location': hospital.location,
+            'createdBy': user.uid,
+            'status': 'open',
+            'createdAt': FieldValue.serverTimestamp(),
+            'expiresAt': Timestamp.fromDate(
+              DateTime.now().add(const Duration(hours: 24)),
+            ),
+            'hospitalName': hospital.name,
+            'serviceInfo': _departmentController.text.trim(),
+            'district': hospital.city,
+            'distanceKm': 0,
+            'alertBadgeLabel': 'Alerte vérifiée',
+            'alertBadgeVariant': 'verified',
+            'bloodGroupTagLabel': bloodGroup.label,
+            'ctaSubtitleText': '$_unitsNeeded poche(s) · ${hospital.name}',
+          });
 
       if (!mounted) return;
-      Navigator.of(context).pop(newId);
-    } catch (error) {
+      Navigator.of(context).pop(doc.id);
+    } on FirebaseException catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _isSubmitting = false;
+        _errorMessage = error.code == 'permission-denied'
+            ? 'Seuls les soignants vérifiés peuvent publier une alerte.'
+            : 'La publication a échoué. Vérifiez votre connexion et réessayez.';
+      });
+    } catch (_) {
       if (!mounted) return;
       setState(() {
         _isSubmitting = false;
         _errorMessage =
-            "La publication a échoué. Vérifiez votre connexion et réessayez.";
+            'La publication a échoué. Vérifiez votre connexion et réessayez.';
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final hospitalsAsync = ref.watch(allHospitalsProvider);
+    final hospitalsAsync = ref.watch(_hospitalsListProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Nouvelle alerte')),
@@ -130,7 +158,7 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
                   style: TextStyle(color: AppColors.textSecondary),
                 );
               }
-              return DropdownButtonFormField<HospitalModel>(
+              return DropdownButtonFormField<Hospital>(
                 initialValue: _hospital,
                 isExpanded: true,
                 decoration: const InputDecoration(border: OutlineInputBorder()),
@@ -149,7 +177,7 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
             },
             loading: () => const LinearProgressIndicator(),
             error: (error, stackTrace) => const Text(
-              "Impossible de charger la liste des hôpitaux.",
+              'Impossible de charger la liste des hôpitaux.',
               style: TextStyle(color: AppColors.textSecondary),
             ),
           ),
@@ -169,14 +197,14 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
           Wrap(
             spacing: 8,
             children: [
-              for (final level in UrgencyLevel.values)
+              for (final (value, label) in _criticalities)
                 ChoiceChip(
-                  label: Text(level.label),
-                  selected: _urgency == level,
+                  label: Text(label),
+                  selected: _criticality == value,
                   onSelected: _isSubmitting
                       ? null
                       : (selected) {
-                          if (selected) setState(() => _urgency = level);
+                          if (selected) setState(() => _criticality = value);
                         },
                 ),
             ],
@@ -214,27 +242,6 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 24),
-          TextField(
-            controller: _notesController,
-            enabled: !_isSubmitting,
-            maxLines: 3,
-            decoration: const InputDecoration(
-              labelText: 'Notes (optionnel)',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _contactPhoneController,
-            enabled: !_isSubmitting,
-            keyboardType: TextInputType.phone,
-            decoration: const InputDecoration(
-              labelText: 'Votre numéro (optionnel, privé)',
-              helperText: "Jamais affiché publiquement, ni aux donneurs.",
-              border: OutlineInputBorder(),
-            ),
-          ),
           if (_errorMessage != null) ...[
             const SizedBox(height: 12),
             Text(
@@ -253,7 +260,7 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
                       height: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text('Publier l\u2019alerte'),
+                  : const Text('Publier l’alerte'),
             ),
           ),
         ],
