@@ -4,7 +4,7 @@ import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/blood_requests/presentation/screens/emergency_screen.dart';
 import '../../features/home/presentation/screens/dashboard_screen.dart';
 import '../../features/home/presentation/widgets/home_shell.dart';
-import '../../features/pharmacies/presentation/screens/pharmacies_screen.dart';
+import '../../features/pharmacy/presentation/screens/pharmacy_list_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/scan_ai/presentation/scan_screen.dart';
 
@@ -53,7 +53,7 @@ final appRouter = GoRouter(
           routes: [
             GoRoute(
               path: AppRoutes.pharmacies,
-              builder: (context, state) => const PharmaciesScreen(),
+              builder: (context, state) => const PharmacyListScreen(),
             ),
           ],
         ),
