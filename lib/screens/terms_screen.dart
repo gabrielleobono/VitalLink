@@ -6,9 +6,7 @@ class TermsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Conditions d’utilisation'),
-      ),
+      appBar: AppBar(title: const Text('Conditions d’utilisation')),
       body: const SingleChildScrollView(
         padding: EdgeInsets.all(20),
         child: Column(
@@ -16,10 +14,7 @@ class TermsScreen extends StatelessWidget {
           children: [
             Text(
               'Conditions d’utilisation',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 20),
             Text(

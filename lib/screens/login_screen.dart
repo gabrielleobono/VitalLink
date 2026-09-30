@@ -18,12 +18,9 @@ class _LoginScreenState extends State<LoginScreen> {
   bool obscurePassword = true;
 
   void login() {
-    if (phoneController.text.isEmpty ||
-        passwordController.text.isEmpty) {
+    if (phoneController.text.isEmpty || passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Veuillez remplir tous les champs'),
-        ),
+        const SnackBar(content: Text('Veuillez remplir tous les champs')),
       );
       return;
     }
@@ -42,35 +39,31 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void loginAsGuest() {
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => const ProfileScreen(
-        name: 'Invité',
-        phone: 'Non renseigné',
-        country: 'Non renseigné',
-        bloodGroup: 'Non renseigné',
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const ProfileScreen(
+          name: 'Invité',
+          phone: 'Non renseigné',
+          country: 'Non renseigné',
+          bloodGroup: 'Non renseigné',
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   void requestOtp() {
     if (phoneController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            'Veuillez entrer votre numéro de téléphone',
-          ),
+          content: Text('Veuillez entrer votre numéro de téléphone'),
         ),
       );
       return;
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Code OTP envoyé à votre numéro'),
-      ),
+      const SnackBar(content: Text('Code OTP envoyé à votre numéro')),
     );
   }
 
@@ -87,10 +80,7 @@ class _LoginScreenState extends State<LoginScreen> {
       backgroundColor: const Color(0xFFF8F9FC),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 16,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Column(
             children: [
               // En-tête
@@ -180,10 +170,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [
-                      Color(0xFFEAF9FA),
-                      Color(0xFFF0F2FF),
-                    ],
+                    colors: [Color(0xFFEAF9FA), Color(0xFFF0F2FF)],
                   ),
                   borderRadius: BorderRadius.circular(18),
                 ),
@@ -198,8 +185,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           const SizedBox(width: 10),
                           const Column(
-                            crossAxisAlignment:
-                                CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 'Don de sang',
@@ -210,9 +196,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               Text(
                                 'Réseau urgent',
-                                style: TextStyle(
-                                  color: Color(0xFF777D8A),
-                                ),
+                                style: TextStyle(color: Color(0xFF777D8A)),
                               ),
                             ],
                           ),
@@ -220,11 +204,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
 
-                    Container(
-                      width: 1,
-                      height: 45,
-                      color: Colors.white,
-                    ),
+                    Container(width: 1, height: 45, color: Colors.white),
 
                     Expanded(
                       child: Row(
@@ -235,8 +215,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           const SizedBox(width: 10),
                           const Column(
-                            crossAxisAlignment:
-                                CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 'Pharmacies',
@@ -247,9 +226,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               Text(
                                 'Gardes en direct',
-                                style: TextStyle(
-                                  color: Color(0xFF777D8A),
-                                ),
+                                style: TextStyle(color: Color(0xFF777D8A)),
                               ),
                             ],
                           ),
@@ -334,8 +311,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       obscureText: obscurePassword,
                       decoration: InputDecoration(
                         labelText: 'Mot de passe',
-                        prefixIcon:
-                            const Icon(Icons.lock_outline),
+                        prefixIcon: const Icon(Icons.lock_outline),
                         suffixIcon: IconButton(
                           icon: Icon(
                             obscurePassword
@@ -344,8 +320,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           onPressed: () {
                             setState(() {
-                              obscurePassword =
-                                  !obscurePassword;
+                              obscurePassword = !obscurePassword;
                             });
                           },
                         ),
@@ -397,12 +372,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              const Color(0xFFE92929),
+                          backgroundColor: const Color(0xFFE92929),
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(14),
                           ),
                         ),
                       ),
@@ -419,19 +392,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         icon: const Icon(Icons.sms_outlined),
                         label: const Text(
                           'Recevoir le code de vérification',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                         style: OutlinedButton.styleFrom(
-                          foregroundColor:
-                              const Color(0xFFE92929),
-                          side: const BorderSide(
-                            color: Color(0xFFE92929),
-                          ),
+                          foregroundColor: const Color(0xFFE92929),
+                          side: const BorderSide(color: Color(0xFFE92929)),
                           shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(14),
                           ),
                         ),
                       ),
@@ -443,9 +410,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: [
                         const Expanded(child: Divider()),
                         Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
                           child: Text(
                             'OU',
                             style: TextStyle(
@@ -478,11 +443,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         style: TextButton.styleFrom(
-                          backgroundColor:
-                              const Color(0xFFF1F3FC),
+                          backgroundColor: const Color(0xFFF1F3FC),
                           shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(14),
                           ),
                         ),
                       ),
@@ -497,8 +460,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) =>
-                                  const RegisterScreen(),
+                              builder: (context) => const RegisterScreen(),
                             ),
                           );
                         },
@@ -550,9 +512,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     height: 1.4,
                   ),
                   children: [
-                    const TextSpan(
-                      text: 'En continuant, vous acceptez nos ',
-                    ),
+                    const TextSpan(text: 'En continuant, vous acceptez nos '),
 
                     TextSpan(
                       text: 'Conditions d’utilisation',
@@ -566,16 +526,13 @@ class _LoginScreenState extends State<LoginScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) =>
-                                  const TermsScreen(),
+                              builder: (context) => const TermsScreen(),
                             ),
                           );
                         },
                     ),
 
-                    const TextSpan(
-                      text: ' et notre ',
-                    ),
+                    const TextSpan(text: ' et notre '),
 
                     TextSpan(
                       text: 'Politique de confidentialité',
@@ -586,20 +543,15 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       recognizer: TapGestureRecognizer()
                         ..onTap = () {
-                          ScaffoldMessenger.of(context)
-                              .showSnackBar(
+                          ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text(
-                                'Politique de confidentialité',
-                              ),
+                              content: Text('Politique de confidentialité'),
                             ),
                           );
                         },
                     ),
 
-                    const TextSpan(
-                      text: '.',
-                    ),
+                    const TextSpan(text: '.'),
                   ],
                 ),
               ),
@@ -612,10 +564,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildSmallIcon(
-    IconData icon,
-    Color color,
-  ) {
+  Widget _buildSmallIcon(IconData icon, Color color) {
     return Container(
       width: 42,
       height: 42,
@@ -623,19 +572,11 @@ class _LoginScreenState extends State<LoginScreen> {
         color: color.withValues(alpha: 0.12),
         shape: BoxShape.circle,
       ),
-      child: Icon(
-        icon,
-        color: color,
-        size: 22,
-      ),
+      child: Icon(icon, color: color, size: 22),
     );
   }
 
-  Widget _buildInfoCard(
-    IconData icon,
-    String title,
-    String subtitle,
-  ) {
+  Widget _buildInfoCard(IconData icon, String title, String subtitle) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -644,16 +585,11 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       child: Row(
         children: [
-          Icon(
-            icon,
-            color: const Color(0xFFE92929),
-            size: 24,
-          ),
+          Icon(icon, color: const Color(0xFFE92929), size: 24),
           const SizedBox(width: 8),
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,

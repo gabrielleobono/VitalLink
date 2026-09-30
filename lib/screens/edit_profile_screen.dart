@@ -71,9 +71,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Modifier mon profil'),
-      ),
+      appBar: AppBar(title: const Text('Modifier mon profil')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -124,38 +122,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   value: 'Non renseigné',
                   child: Text('Non renseigné'),
                 ),
-                DropdownMenuItem(
-                  value: 'A+',
-                  child: Text('A+'),
-                ),
-                DropdownMenuItem(
-                  value: 'A-',
-                  child: Text('A-'),
-                ),
-                DropdownMenuItem(
-                  value: 'B+',
-                  child: Text('B+'),
-                ),
-                DropdownMenuItem(
-                  value: 'B-',
-                  child: Text('B-'),
-                ),
-                DropdownMenuItem(
-                  value: 'AB+',
-                  child: Text('AB+'),
-                ),
-                DropdownMenuItem(
-                  value: 'AB-',
-                  child: Text('AB-'),
-                ),
-                DropdownMenuItem(
-                  value: 'O+',
-                  child: Text('O+'),
-                ),
-                DropdownMenuItem(
-                  value: 'O-',
-                  child: Text('O-'),
-                ),
+                DropdownMenuItem(value: 'A+', child: Text('A+')),
+                DropdownMenuItem(value: 'A-', child: Text('A-')),
+                DropdownMenuItem(value: 'B+', child: Text('B+')),
+                DropdownMenuItem(value: 'B-', child: Text('B-')),
+                DropdownMenuItem(value: 'AB+', child: Text('AB+')),
+                DropdownMenuItem(value: 'AB-', child: Text('AB-')),
+                DropdownMenuItem(value: 'O+', child: Text('O+')),
+                DropdownMenuItem(value: 'O-', child: Text('O-')),
               ],
               onChanged: (value) {
                 if (value != null) {

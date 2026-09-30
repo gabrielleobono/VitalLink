@@ -64,9 +64,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void logout() {
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(
-        builder: (context) => const LoginScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
       (route) => false,
     );
   }
@@ -74,35 +72,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-     appBar: AppBar(
-  leading: IconButton(
-    icon: const Icon(Icons.arrow_back),
-    onPressed: () {
-      Navigator.pop(context);
-    },
-  ),
-  title: const Text('Mon profil'),
-),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        title: const Text('Mon profil'),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            const CircleAvatar(
-              radius: 45,
-              child: Icon(
-                Icons.person,
-                size: 50,
-              ),
-            ),
+            const CircleAvatar(radius: 45, child: Icon(Icons.person, size: 50)),
 
             const SizedBox(height: 20),
 
             const Text(
               'Profil citoyen',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 30),
@@ -136,9 +125,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             SwitchListTile(
               title: const Text(
                 'Prêt à donner',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
               subtitle: Text(
                 isReadyToDonate
@@ -147,9 +134,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               value: isReadyToDonate,
               secondary: Icon(
-                isReadyToDonate
-                    ? Icons.volunteer_activism
-                    : Icons.bloodtype,
+                isReadyToDonate ? Icons.volunteer_activism : Icons.bloodtype,
               ),
               onChanged: (value) {
                 setState(() {

@@ -31,9 +31,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         countryController.text.trim().isEmpty ||
         passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Veuillez remplir tous les champs'),
-        ),
+        const SnackBar(content: Text('Veuillez remplir tous les champs')),
       );
       return;
     }
@@ -54,17 +52,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Créer un compte'),
-      ),
+      appBar: AppBar(title: const Text('Créer un compte')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            const Icon(
-              Icons.person_add,
-              size: 70,
-            ),
+            const Icon(Icons.person_add, size: 70),
 
             const SizedBox(height: 20),
 
@@ -115,38 +108,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   value: 'Non renseigné',
                   child: Text('Non renseigné'),
                 ),
-                DropdownMenuItem(
-                  value: 'A+',
-                  child: Text('A+'),
-                ),
-                DropdownMenuItem(
-                  value: 'A-',
-                  child: Text('A-'),
-                ),
-                DropdownMenuItem(
-                  value: 'B+',
-                  child: Text('B+'),
-                ),
-                DropdownMenuItem(
-                  value: 'B-',
-                  child: Text('B-'),
-                ),
-                DropdownMenuItem(
-                  value: 'AB+',
-                  child: Text('AB+'),
-                ),
-                DropdownMenuItem(
-                  value: 'AB-',
-                  child: Text('AB-'),
-                ),
-                DropdownMenuItem(
-                  value: 'O+',
-                  child: Text('O+'),
-                ),
-                DropdownMenuItem(
-                  value: 'O-',
-                  child: Text('O-'),
-                ),
+                DropdownMenuItem(value: 'A+', child: Text('A+')),
+                DropdownMenuItem(value: 'A-', child: Text('A-')),
+                DropdownMenuItem(value: 'B+', child: Text('B+')),
+                DropdownMenuItem(value: 'B-', child: Text('B-')),
+                DropdownMenuItem(value: 'AB+', child: Text('AB+')),
+                DropdownMenuItem(value: 'AB-', child: Text('AB-')),
+                DropdownMenuItem(value: 'O+', child: Text('O+')),
+                DropdownMenuItem(value: 'O-', child: Text('O-')),
               ],
               onChanged: (value) {
                 if (value != null) {
