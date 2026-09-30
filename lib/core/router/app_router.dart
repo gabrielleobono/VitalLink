@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 
 import '../../features/auth/presentation/screens/login_screen.dart';
+import '../../features/blood_requests/presentation/screens/emergency_detail_screen.dart';
 import '../../features/blood_requests/presentation/screens/emergency_screen.dart';
 import '../../features/home/presentation/screens/dashboard_screen.dart';
 import '../../features/home/presentation/widgets/home_shell.dart';
@@ -16,6 +17,8 @@ abstract final class AppRoutes {
   static const pharmacies = '/pharmacies';
   static const profile = '/profile';
   static const scan = '/scan';
+
+  static String emergencyDetail(String alertId) => '/emergencies/$alertId';
 }
 
 final appRouter = GoRouter(
@@ -28,6 +31,11 @@ final appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.scan,
       builder: (context, state) => const ScanScreen(),
+    ),
+    GoRoute(
+      path: '/emergencies/:alertId',
+      builder: (context, state) =>
+          EmergencyDetailScreen(alertId: state.pathParameters['alertId']!),
     ),
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) =>
