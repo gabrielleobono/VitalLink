@@ -2,11 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>NSCameraUsageDescription</key>
-    <string>VitalLink utilise l'appareil photo pour scanner votre ordonnance ou boîte de médicament.</string>
-    <key>NSPhotoLibraryUsageDescription</key>
-    <string>VitalLink a besoin d'accéder à votre galerie pour analyser une photo d'ordonnance existante.</string>
-
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
@@ -31,6 +26,12 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>VitalLink a besoin de l'appareil photo pour scanner votre ordonnance.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>VitalLink a besoin d'accéder à vos photos pour importer une ordonnance depuis la galerie.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>VitalLink utilise votre position pour trouver les pharmacies de garde et les urgences sanguines les plus proches.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
