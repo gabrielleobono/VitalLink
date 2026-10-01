@@ -6,8 +6,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 /// compatibleGroups, units, criticality, hospitalId, location, geohash,
 /// createdBy, status, createdAt, expiresAt) et ajoute des champs
 /// dénormalisés d'affichage (hospitalName, serviceInfo, district,
-/// distanceKm, alertBadgeLabel, alertBadgeVariant, ...) pour éviter une
-/// jointure par carte dans la liste.
+/// distanceKm, alertBadgeLabel, ...) pour éviter une jointure par carte
+/// dans la liste.
 class BloodAlert {
   const BloodAlert({
     required this.id,
