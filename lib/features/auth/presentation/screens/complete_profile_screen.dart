@@ -91,7 +91,12 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
             city: _city,
             isDonor: _readyToDonate,
             bloodGroup: _bloodGroup?.label,
-          );
+          )
+          // La persistance hors-ligne de Firestore écrit déjà dans le cache
+          // local immédiatement ; ce Future n'attend que l'accusé du
+          // serveur. Sur un réseau faible, on n'attend pas indéfiniment —
+          // la synchronisation se termine en arrière-plan.
+          .timeout(const Duration(seconds: 6), onTimeout: () {});
       markProfileComplete();
       if (!mounted) return;
       context.go(AppRoutes.home);
