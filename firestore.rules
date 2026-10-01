@@ -36,9 +36,23 @@ service cloud.firestore {
       return hasRole(request.auth.uid, 'pharmacist') && isVerified(request.auth.uid);
     }
 
-    // --- users/{uid} : chacun ne lit/écrit que son propre profil. ---
+    // --- users/{uid} : chacun ne lit/écrit que son propre profil. Pas de
+    // sélecteur de rôle dans l'app, donc la création est verrouillée sur
+    // role == "citizen". Un utilisateur ne peut jamais s'auto-attribuer
+    // verified == true, ni changer role ou verified après la création — ces
+    // deux champs ne sont modifiables que par un admin (Admin SDK / Cloud
+    // Function, qui contourne ces règles). Sans ça, n'importe quel citizen
+    // pourrait s'écrire lui-même {role: "medical_staff", verified: true} et
+    // débloquer isVerifiedMedicalStaff() partout ailleurs dans ce fichier. ---
     match /users/{uid} {
-      allow read, write: if isOwner(uid);
+      allow read: if isOwner(uid);
+      allow create: if isOwner(uid) &&
+          request.resource.data.role == 'citizen' &&
+          request.resource.data.verified == false;
+      allow update: if isOwner(uid) &&
+          request.resource.data.role == resource.data.role &&
+          request.resource.data.verified == resource.data.verified;
+      allow delete: if false;
     }
 
     // --- donors/{uid} : jamais listable, chacun ne lit/écrit que le sien. ---
@@ -80,16 +94,39 @@ service cloud.firestore {
     }
 
     // --- bloodAlerts/{id} : lecture publique (les urgences à proximité sont
-    // visibles même en mode invité, cf. Figma "Accueil"). Seul un
-    // medical_staff vérifié peut créer une alerte, et seul son créateur peut
-    // la modifier. Aucune donnée nominative du patient ne doit être stockée. ---
+    // visibles même en mode invité, cf. Figma "Accueil"). Deux façons de
+    // créer une alerte :
+    //   - un medical_staff vérifié la crée directement en source
+    //     "medical_staff", avec alertBadgeVariant "verified" ;
+    //   - un citizen connecté la crée en source "citizen", avec
+    //     alertBadgeVariant "citizen" — sans pouvoir définir verifiedBy.
+    // `alertBadgeVariant` (ce que l'app affiche) est verrouillé exactement
+    // comme `verifiedBy`/`source` : seul un medical_staff vérifié peut le
+    // faire passer à "verified", à la création comme à la mise à jour — un
+    // citizen ne peut jamais l'écrire lui-même à "verified", même s'il sait
+    // que le champ existe. Aucune donnée nominative du patient ne doit être
+    // stockée. ---
     match /bloodAlerts/{id} {
       allow read: if true;
-      allow create: if isVerifiedMedicalStaff() &&
-          request.resource.data.createdBy == request.auth.uid &&
+      allow create: if request.resource.data.createdBy == request.auth.uid &&
           !('patientName' in request.resource.data) &&
-          !('patientFullName' in request.resource.data);
-      allow update: if isSignedIn() && resource.data.createdBy == request.auth.uid;
+          !('patientFullName' in request.resource.data) &&
+          (
+            (isVerifiedMedicalStaff() &&
+                request.resource.data.source == 'medical_staff' &&
+                request.resource.data.alertBadgeVariant == 'verified') ||
+            (hasRole(request.auth.uid, 'citizen') &&
+                request.resource.data.source == 'citizen' &&
+                request.resource.data.alertBadgeVariant == 'citizen' &&
+                !('verifiedBy' in request.resource.data))
+          );
+      allow update: if isSignedIn() && (
+          isVerifiedMedicalStaff() ||
+          (resource.data.createdBy == request.auth.uid &&
+              request.resource.data.get('verifiedBy', null) == resource.data.get('verifiedBy', null) &&
+              request.resource.data.source == resource.data.source &&
+              request.resource.data.alertBadgeVariant == resource.data.alertBadgeVariant)
+        );
       allow delete: if false;
 
       // --- responses/{donorUid} : le donneur gère sa propre réponse
