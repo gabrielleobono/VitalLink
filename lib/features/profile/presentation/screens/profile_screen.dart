@@ -1,13 +1,13 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_palette.dart';
 import '../../data/models/donor_profile.dart';
-import '../../data/models/user_profile.dart';
+import '../../domain/entities/user_profile.dart';
 import '../providers/profile_providers.dart';
 
 /// Écran "Mon Profil" : identité, bascule "Prêt à donner" et raccourcis,
@@ -34,7 +34,11 @@ class ProfileScreen extends ConsumerWidget {
         child: userAsync.when(
           data: (user) => user == null
               ? _NoProfilePrompt(
-                  onCreateProfile: () => context.push(AppRoutes.register),
+                  onCreateProfile: () {
+                    // Un invité doit d'abord vérifier son numéro (OTP).
+                    resetSession();
+                    context.push(AppRoutes.login);
+                  },
                 )
               : _ProfileBody(
                   user: user,
@@ -326,7 +330,7 @@ class _ProfileBody extends ConsumerWidget {
                 labelColor: AppColors.primary,
                 iconColor: AppColors.primary,
                 onTap: () async {
-                  await FirebaseAuth.instance.signOut();
+                  await ref.read(phoneAuthControllerProvider).signOut();
                   resetSession();
                   if (context.mounted) context.go(AppRoutes.login);
                 },
@@ -440,7 +444,8 @@ class _Card extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: palette.border),
       ),
-      child: child,
+      // Material requis pour les ink splashes des ListTile internes.
+      child: Material(color: Colors.transparent, child: child),
     );
   }
 }

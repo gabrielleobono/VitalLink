@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../features/auth/presentation/screens/register_screen.dart';
+import '../../features/auth/presentation/screens/complete_profile_screen.dart';
 import '../../features/auth/presentation/screens/sign_in_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/blood_requests/presentation/screens/create_alert_screen.dart';
@@ -18,7 +18,7 @@ import '../../features/scan_ai/presentation/scan_screen.dart';
 abstract final class AppRoutes {
   static const splash = '/splash';
   static const login = '/login';
-  static const register = '/register';
+  static const completeProfile = '/complete-profile';
   static const home = '/home';
   static const emergencies = '/emergencies';
   static const pharmacies = '/pharmacies';
@@ -39,8 +39,9 @@ bool _profileConfirmed = false;
 /// c'est actif, le `redirect` n'impose plus ni connexion ni inscription.
 bool _guestMode = false;
 
-/// À appeler juste après la création réussie du profil (écran d'inscription)
-/// pour que le prochain `redirect` n'essaie pas de rediriger à nouveau.
+/// À appeler juste après la création réussie du profil (écran "Compléter mon
+/// profil") pour que le prochain `redirect` n'essaie pas de rediriger à
+/// nouveau.
 void markProfileComplete() => _profileConfirmed = true;
 
 /// À appeler quand l'utilisateur choisit "Continuer sans compte".
@@ -59,7 +60,9 @@ final appRouter = GoRouter(
     final location = state.matchedLocation;
     if (_guestMode || location == AppRoutes.login) return null;
     if (location == AppRoutes.splash) return null;
-    if (_profileConfirmed || location == AppRoutes.register) return null;
+    if (_profileConfirmed || location == AppRoutes.completeProfile) {
+      return null;
+    }
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) return AppRoutes.login;
@@ -71,7 +74,7 @@ final appRouter = GoRouter(
         _profileConfirmed = true;
         return null;
       }
-      return AppRoutes.register;
+      return AppRoutes.completeProfile;
     } catch (_) {
       // Auth/Firestore indisponible : ne bloque pas la navigation.
       return null;
@@ -87,8 +90,8 @@ final appRouter = GoRouter(
       builder: (context, state) => const SignInScreen(),
     ),
     GoRoute(
-      path: AppRoutes.register,
-      builder: (context, state) => const RegisterScreen(),
+      path: AppRoutes.completeProfile,
+      builder: (context, state) => const CompleteProfileScreen(),
     ),
     GoRoute(
       path: AppRoutes.scan,

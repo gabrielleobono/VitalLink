@@ -36,16 +36,19 @@ service cloud.firestore {
       return hasRole(request.auth.uid, 'pharmacist') && isVerified(request.auth.uid);
     }
 
-    // --- users/{uid} : chacun ne lit/écrit que son propre profil, mais ne
-    // peut jamais s'auto-attribuer verified == true, ni changer role ou
-    // verified après la création — ces deux champs ne sont modifiables que
-    // par un admin (Admin SDK / Cloud Function, qui contourne ces règles).
-    // Sans ça, n'importe quel citizen pourrait s'écrire lui-même
-    // {role: "medical_staff", verified: true} et débloquer
-    // isVerifiedMedicalStaff() partout ailleurs dans ce fichier. ---
+    // --- users/{uid} : chacun ne lit/écrit que son propre profil. Pas de
+    // sélecteur de rôle dans l'app, donc la création est verrouillée sur
+    // role == "citizen". Un utilisateur ne peut jamais s'auto-attribuer
+    // verified == true, ni changer role ou verified après la création — ces
+    // deux champs ne sont modifiables que par un admin (Admin SDK / Cloud
+    // Function, qui contourne ces règles). Sans ça, n'importe quel citizen
+    // pourrait s'écrire lui-même {role: "medical_staff", verified: true} et
+    // débloquer isVerifiedMedicalStaff() partout ailleurs dans ce fichier. ---
     match /users/{uid} {
       allow read: if isOwner(uid);
-      allow create: if isOwner(uid) && request.resource.data.verified == false;
+      allow create: if isOwner(uid) &&
+          request.resource.data.role == 'citizen' &&
+          request.resource.data.verified == false;
       allow update: if isOwner(uid) &&
           request.resource.data.role == resource.data.role &&
           request.resource.data.verified == resource.data.verified;

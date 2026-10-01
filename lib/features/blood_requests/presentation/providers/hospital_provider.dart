@@ -1,18 +1,19 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/providers/firestore_providers.dart';
 import '../../data/models/hospital.dart';
+import '../../data/repositories/hospital_lookup_repository.dart';
+
+final hospitalLookupRepositoryProvider = Provider<HospitalLookupRepository>((
+  ref,
+) {
+  return HospitalLookupRepository(ref.watch(firestoreProvider));
+});
 
 /// Fiche d'un hôpital par son id (`hospitals/{id}`).
 final hospitalProvider = FutureProvider.family<Hospital?, String>((
   ref,
   hospitalId,
-) async {
-  if (hospitalId.isEmpty) return null;
-  final snapshot = await FirebaseFirestore.instance
-      .collection('hospitals')
-      .doc(hospitalId)
-      .get();
-  if (!snapshot.exists) return null;
-  return Hospital.fromFirestore(snapshot.id, snapshot.data()!);
+) {
+  return ref.watch(hospitalLookupRepositoryProvider).fetchById(hospitalId);
 });
