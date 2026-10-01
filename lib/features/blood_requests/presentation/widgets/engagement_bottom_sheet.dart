@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/providers/auth_providers.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/blood_request_enums.dart';
 import '../providers/pledge_providers.dart';

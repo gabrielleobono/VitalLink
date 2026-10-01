@@ -1,49 +1,37 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/providers/auth_providers.dart';
+import '../../../../core/providers/firestore_providers.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../data/models/donor_profile.dart';
-import '../../data/models/user_profile.dart';
+import '../../data/repositories/profile_repository_impl.dart';
+import '../../domain/entities/user_profile.dart';
+import '../../domain/repositories/profile_repository.dart';
+
+final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
+  return ProfileRepositoryImpl(ref.watch(firestoreProvider));
+});
 
 /// Flux du profil `users/{uid}` — le document est créé par l'écran
-/// d'inscription (`RegisterScreen`) avant même que l'app n'atteigne l'Accueil
-/// ou le Profil (cf. le `redirect` de `appRouter`), donc il existe toujours
-/// ici en usage normal.
+/// "Compléter mon profil" avant même que l'app n'atteigne l'Accueil ou le
+/// Profil (cf. le `redirect` de `appRouter`), donc il existe toujours ici en
+/// usage normal.
 final userProfileProvider = StreamProvider<UserProfile?>((ref) async* {
   final uid = await ref.watch(currentUserIdProvider.future);
-  yield* FirebaseFirestore.instance
-      .collection('users')
-      .doc(uid)
-      .snapshots()
-      .map(
-        (doc) =>
-            doc.exists ? UserProfile.fromFirestore(uid, doc.data()!) : null,
-      );
+  yield* ref.watch(profileRepositoryProvider).watchUser(uid);
 });
 
 final donorProfileProvider = StreamProvider<DonorProfile?>((ref) async* {
   final uid = await ref.watch(currentUserIdProvider.future);
-  yield* FirebaseFirestore.instance
-      .collection('donors')
-      .doc(uid)
-      .snapshots()
-      .map(
-        (doc) => doc.exists ? DonorProfile.fromFirestore(doc.data()!) : null,
-      );
+  yield* ref.watch(profileRepositoryProvider).watchDonor(uid);
 });
 
 /// Alertes publiées par l'utilisateur courant (pour la carte statistiques).
 final myAlertsCountProvider = StreamProvider<int>((ref) async* {
   final uid = await ref.watch(currentUserIdProvider.future);
-  yield* FirebaseFirestore.instance
-      .collection('bloodAlerts')
-      .where('createdBy', isEqualTo: uid)
-      .snapshots()
-      .map((snapshot) => snapshot.docs.length);
+  yield* ref.watch(profileRepositoryProvider).watchMyAlertsCount(uid);
 });
 
-/// Bascule "Prêt à donner" de la carte "Engagement Donneur" — crée
-/// `donors/{uid}` au premier passage à `true`.
+/// Bascule "Prêt à donner" de la carte "Engagement Donneur".
 class DonorAvailabilityController {
   DonorAvailabilityController(this._ref);
 
@@ -51,12 +39,9 @@ class DonorAvailabilityController {
 
   Future<void> setAvailable(bool available) async {
     final uid = await _ref.read(currentUserIdProvider.future);
-    await FirebaseFirestore.instance.collection('donors').doc(uid).set({
-      'available': available,
-    }, SetOptions(merge: true));
-    await FirebaseFirestore.instance.collection('users').doc(uid).set({
-      'isDonor': available,
-    }, SetOptions(merge: true));
+    await _ref
+        .read(profileRepositoryProvider)
+        .setDonorAvailability(uid, available);
   }
 }
 
@@ -64,3 +49,34 @@ final donorAvailabilityControllerProvider =
     Provider<DonorAvailabilityController>(
       (ref) => DonorAvailabilityController(ref),
     );
+
+/// Création du profil (écran "Compléter mon profil", nouveau numéro).
+class ProfileCreationController {
+  ProfileCreationController(this._ref);
+
+  final Ref _ref;
+
+  Future<void> createProfile({
+    required String displayName,
+    required String country,
+    required String city,
+    required bool isDonor,
+    String? bloodGroup,
+  }) async {
+    final uid = await _ref.read(currentUserIdProvider.future);
+    await _ref
+        .read(profileRepositoryProvider)
+        .createProfile(
+          uid: uid,
+          displayName: displayName,
+          country: country,
+          city: city,
+          isDonor: isDonor,
+          bloodGroup: bloodGroup,
+        );
+  }
+}
+
+final profileCreationControllerProvider = Provider<ProfileCreationController>(
+  (ref) => ProfileCreationController(ref),
+);

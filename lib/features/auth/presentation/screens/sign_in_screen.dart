@@ -1,13 +1,12 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../providers/auth_providers.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_palette.dart';
-import '../../data/africa_locations.dart';
-
-enum _SignInMode { bloodDonation, pharmacies }
+import '../../data/datasources/africa_locations.dart';
 
 enum _SignInStep { phone, otp }
 
@@ -17,18 +16,17 @@ enum _SignInStep { phone, otp }
 /// Tant que le plan Blaze n'est pas activé, seuls les numéros de test
 /// configurés dans Firebase Console (Authentication > Sign-in method >
 /// Phone > Numéros de test) reçoivent un code — aucun vrai SMS n'est envoyé.
-class SignInScreen extends StatefulWidget {
+class SignInScreen extends ConsumerStatefulWidget {
   const SignInScreen({super.key});
 
   @override
-  State<SignInScreen> createState() => _SignInScreenState();
+  ConsumerState<SignInScreen> createState() => _SignInScreenState();
 }
 
-class _SignInScreenState extends State<SignInScreen> {
+class _SignInScreenState extends ConsumerState<SignInScreen> {
   final _phoneController = TextEditingController();
   final _codeController = TextEditingController();
 
-  _SignInMode _mode = _SignInMode.bloodDonation;
   _SignInStep _step = _SignInStep.phone;
   String _country = 'Cameroun';
   String? _verificationId;
@@ -55,31 +53,29 @@ class _SignInScreenState extends State<SignInScreen> {
       _errorMessage = null;
     });
     try {
-      await FirebaseAuth.instance.verifyPhoneNumber(
-        phoneNumber: '$_dialCode$rawNumber',
-        verificationCompleted: (credential) async {
-          await FirebaseAuth.instance.signInWithCredential(credential);
-          if (mounted) context.go(AppRoutes.home);
-        },
-        verificationFailed: (e) {
-          if (!mounted) return;
-          setState(() {
-            _isSubmitting = false;
-            _errorMessage = e.message ?? "L'envoi du code a échoué. Réessayez.";
-          });
-        },
-        codeSent: (verificationId, _) {
-          if (!mounted) return;
-          setState(() {
-            _isSubmitting = false;
-            _verificationId = verificationId;
-            _step = _SignInStep.otp;
-          });
-        },
-        codeAutoRetrievalTimeout: (verificationId) {
-          _verificationId = verificationId;
-        },
-      );
+      await ref
+          .read(phoneAuthControllerProvider)
+          .sendCode(
+            phoneNumber: '$_dialCode$rawNumber',
+            onAutoVerified: () {
+              if (mounted) context.go(AppRoutes.home);
+            },
+            onError: (message) {
+              if (!mounted) return;
+              setState(() {
+                _isSubmitting = false;
+                _errorMessage = message;
+              });
+            },
+            onCodeSent: (verificationId) {
+              if (!mounted) return;
+              setState(() {
+                _isSubmitting = false;
+                _verificationId = verificationId;
+                _step = _SignInStep.otp;
+              });
+            },
+          );
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -98,11 +94,9 @@ class _SignInScreenState extends State<SignInScreen> {
       _errorMessage = null;
     });
     try {
-      final credential = PhoneAuthProvider.credential(
-        verificationId: verificationId,
-        smsCode: smsCode,
-      );
-      await FirebaseAuth.instance.signInWithCredential(credential);
+      await ref
+          .read(phoneAuthControllerProvider)
+          .confirmCode(verificationId: verificationId, smsCode: smsCode);
       if (!mounted) return;
       context.go(AppRoutes.home);
     } catch (e) {
@@ -130,6 +124,15 @@ class _SignInScreenState extends State<SignInScreen> {
           children: [
             Row(
               children: [
+                InkWell(
+                  onTap: context.canPop() ? () => context.pop() : null,
+                  borderRadius: BorderRadius.circular(20),
+                  child: Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: Icon(Icons.arrow_back, color: palette.textPrimary),
+                  ),
+                ),
+                const SizedBox(width: 6),
                 Container(
                   width: 40,
                   height: 40,
@@ -169,33 +172,61 @@ class _SignInScreenState extends State<SignInScreen> {
               ],
             ),
             const SizedBox(height: 20),
+            // Bloc informatif (un seul type de compte dans l'app).
             Container(
-              padding: const EdgeInsets.all(4),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
-                color: palette.surface,
+                color: AppColors.softBlue,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: palette.border),
               ),
               child: Row(
                 children: [
                   Expanded(
-                    child: _ModeTab(
-                      icon: Icons.water_drop,
-                      title: 'Don de sang',
-                      subtitle: "Réseau d'urgence",
-                      selected: _mode == _SignInMode.bloodDonation,
-                      onTap: () =>
-                          setState(() => _mode = _SignInMode.bloodDonation),
+                    child: Column(
+                      children: [
+                        Text(
+                          'Don de sang',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          "Réseau d'urgence",
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: palette.textSecondary,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
+                  SizedBox(
+                    height: 32,
+                    child: VerticalDivider(color: palette.border, width: 1),
+                  ),
                   Expanded(
-                    child: _ModeTab(
-                      icon: Icons.local_pharmacy_rounded,
-                      title: 'Pharmacies',
-                      subtitle: 'Gardes en direct',
-                      selected: _mode == _SignInMode.pharmacies,
-                      onTap: () =>
-                          setState(() => _mode = _SignInMode.pharmacies),
+                    child: Column(
+                      children: [
+                        Text(
+                          'Pharmacies',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.tealPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Gardes en direct',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: palette.textSecondary,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -469,11 +500,12 @@ class _SignInScreenState extends State<SignInScreen> {
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
-              child: OutlinedButton(
+              child: ElevatedButton(
                 onPressed: _continueAsGuest,
-                style: OutlinedButton.styleFrom(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.softBlue,
                   foregroundColor: palette.textPrimary,
-                  side: BorderSide(color: palette.border),
+                  elevation: 0,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -492,68 +524,29 @@ class _SignInScreenState extends State<SignInScreen> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
-            Text(
-              "En continuant, vous acceptez nos Conditions d'utilisation et notre Politique de confidentialité.",
-              style: TextStyle(fontSize: 11, color: palette.textSecondary),
+            RichText(
               textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ModeTab extends StatelessWidget {
-  const _ModeTab({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final palette = context.palette;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(10),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          color: selected ? AppColors.primary : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Column(
-          children: [
-            Icon(
-              icon,
-              size: 18,
-              color: selected ? Colors.white : palette.textSecondary,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: selected ? Colors.white : palette.textPrimary,
-              ),
-            ),
-            Text(
-              subtitle,
-              style: TextStyle(
-                fontSize: 10,
-                color: selected
-                    ? Colors.white.withValues(alpha: 0.85)
-                    : palette.textSecondary,
+              text: TextSpan(
+                style: TextStyle(fontSize: 11, color: palette.textSecondary),
+                children: [
+                  const TextSpan(text: 'En continuant, vous acceptez nos '),
+                  TextSpan(
+                    text: "Conditions d'utilisation",
+                    style: const TextStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const TextSpan(text: ' et notre '),
+                  TextSpan(
+                    text: 'Politique de confidentialité',
+                    style: const TextStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const TextSpan(text: '.'),
+                ],
               ),
             ),
           ],

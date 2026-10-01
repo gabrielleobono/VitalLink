@@ -125,10 +125,14 @@ class DashboardScreen extends ConsumerWidget {
                         .read(themeModeProvider.notifier)
                         .setMode(isDark ? ThemeMode.light : ThemeMode.dark),
                   ),
-                  CircleAvatar(
-                    radius: 18,
-                    backgroundColor: palette.border,
-                    child: Icon(Icons.person, color: palette.textSecondary),
+                  InkWell(
+                    onTap: () => context.go(AppRoutes.profile),
+                    customBorder: const CircleBorder(),
+                    child: CircleAvatar(
+                      radius: 18,
+                      backgroundColor: palette.border,
+                      child: Icon(Icons.person, color: palette.textSecondary),
+                    ),
                   ),
                 ],
               ),

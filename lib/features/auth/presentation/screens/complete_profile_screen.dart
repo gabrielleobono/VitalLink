@@ -1,27 +1,30 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/providers/auth_providers.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_palette.dart';
 import '../../../../core/utils/blood_compatibility.dart';
-import '../../data/africa_locations.dart';
+import '../../../profile/presentation/providers/profile_providers.dart';
+import '../../data/datasources/africa_locations.dart';
 
-/// Inscription rapide multi-pays : "Créer mon profil" (Figma) — nom complet,
+/// "Compléter mon profil" (Figma "Créer mon profil") : nom complet,
 /// pays/ville, groupe sanguin (optionnel) et bascule "Prêt à donner".
-/// S'affiche une seule fois, avant la première entrée dans l'app (cf. le
-/// `redirect` de [appRouter]).
-class RegisterScreen extends ConsumerStatefulWidget {
-  const RegisterScreen({super.key});
+///
+/// Affiché après une connexion OTP réussie si le numéro est nouveau (aucun
+/// document `users/{uid}`) — cf. le `redirect` de [appRouter]. Il n'y a pas
+/// d'écran d'inscription séparé : avec Firebase Auth par SMS, inscription et
+/// connexion se font au même endroit ([SignInScreen]).
+class CompleteProfileScreen extends ConsumerStatefulWidget {
+  const CompleteProfileScreen({super.key});
 
   @override
-  ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
+  ConsumerState<CompleteProfileScreen> createState() =>
+      _CompleteProfileScreenState();
 }
 
-class _RegisterScreenState extends ConsumerState<RegisterScreen> {
+class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
   final _nameController = TextEditingController();
   String _country = 'Cameroun';
   String _city = 'Douala';
@@ -80,28 +83,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       _errorMessage = null;
     });
     try {
-      final uid = await ref.read(currentUserIdProvider.future);
-      final firestore = FirebaseFirestore.instance;
-      await firestore.collection('users').doc(uid).set({
-        'role': 'citizen',
-        'displayName': name,
-        'email': '',
-        'phone': '',
-        'country': _country,
-        'city': _city,
-        'verified': false,
-        'isDonor': _readyToDonate,
-        'fcmTokens': <String>[],
-        'createdAt': FieldValue.serverTimestamp(),
-      });
-      final bloodGroup = _bloodGroup;
-      if (bloodGroup != null) {
-        await firestore.collection('donors').doc(uid).set({
-          'bloodGroup': bloodGroup.label,
-          'available': _readyToDonate,
-          'lastDonationAt': null,
-        });
-      }
+      await ref
+          .read(profileCreationControllerProvider)
+          .createProfile(
+            displayName: name,
+            country: _country,
+            city: _city,
+            isDonor: _readyToDonate,
+            bloodGroup: _bloodGroup?.label,
+          );
       markProfileComplete();
       if (!mounted) return;
       context.go(AppRoutes.home);
