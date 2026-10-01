@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_palette.dart';
-import '../../../../core/theme/theme_mode_provider.dart';
 import '../providers/blood_alert_provider.dart';
 import '../widgets/blood_alert_card.dart';
 
@@ -18,11 +17,6 @@ class DashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final palette = context.palette;
     final alertsAsync = ref.watch(bloodAlertsProvider);
-    final themeMode = ref.watch(themeModeProvider);
-    final isDark =
-        themeMode == ThemeMode.dark ||
-        (themeMode == ThemeMode.system &&
-            MediaQuery.platformBrightnessOf(context) == Brightness.dark);
 
     return Scaffold(
       backgroundColor: palette.background,
@@ -110,21 +104,7 @@ class DashboardScreen extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(width: 4),
-                  IconButton(
-                    tooltip: isDark
-                        ? 'Passer en mode clair'
-                        : 'Passer en mode sombre',
-                    icon: Icon(
-                      isDark
-                          ? Icons.light_mode_outlined
-                          : Icons.dark_mode_outlined,
-                      color: palette.textSecondary,
-                    ),
-                    onPressed: () => ref
-                        .read(themeModeProvider.notifier)
-                        .setMode(isDark ? ThemeMode.light : ThemeMode.dark),
-                  ),
+                  const SizedBox(width: 8),
                   CircleAvatar(
                     radius: 18,
                     backgroundColor: palette.border,
