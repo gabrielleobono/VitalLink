@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -16,7 +16,7 @@ class DashboardScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final pharmacies = ref.watch(pharmacyListProvider);
+    final pharmacies = ref.watch(filteredPharmaciesProvider);
     final onDutyCount = pharmacies.where((p) => p.isOnDuty).length;
 
     return Scaffold(
@@ -52,10 +52,8 @@ class DashboardScreen extends ConsumerWidget {
         ),
         actions: [
           IconButton(
-            icon: const Icon(
-              Icons.notifications_none_rounded,
-              color: AppColors.textPrimary,
-            ),
+            icon: const Icon(Icons.notifications_none_rounded,
+                color: AppColors.textPrimary),
             onPressed: () {},
           ),
           const SizedBox(width: 4),
@@ -90,9 +88,7 @@ class DashboardScreen extends ConsumerWidget {
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
+                          horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(20),
@@ -112,11 +108,7 @@ class DashboardScreen extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    const Icon(
-                      Icons.water_drop,
-                      color: Colors.white70,
-                      size: 24,
-                    ),
+                    const Icon(Icons.water_drop, color: Colors.white70, size: 24),
                   ],
                 ),
                 const SizedBox(height: 12),
@@ -149,10 +141,7 @@ class DashboardScreen extends ConsumerWidget {
                     ),
                     child: const Text(
                       'Voir les alertes de sang',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 13,
-                      ),
+                      style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
                     ),
                   ),
                 ),
@@ -223,9 +212,7 @@ class DashboardScreen extends ConsumerWidget {
                             const SizedBox(width: 6),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 2,
-                              ),
+                                  horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
                                 color: AppColors.primary,
                                 borderRadius: BorderRadius.circular(10),
