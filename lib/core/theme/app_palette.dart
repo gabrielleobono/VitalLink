@@ -1,11 +1,11 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 import 'app_colors.dart';
 
 /// Couleurs structurelles (fond, surface, texte, bordures) qui doivent
 /// s'inverser en mode sombre. Les couleurs de marque et les badges pastel
 /// (`AppColors.primary`, `tealPrimary`, `softBlue`, ...) restent identiques
-/// dans les deux modes - ce ne sont pas des surfaces, elles ne sont donc pas
+/// dans les deux modes — ce ne sont pas des surfaces, elles ne sont donc pas
 /// dans cette palette et continuent de se lire via `AppColors` directement.
 @immutable
 class AppPalette extends ThemeExtension<AppPalette> {
@@ -79,6 +79,5 @@ class AppPalette extends ThemeExtension<AppPalette> {
 /// Accès pratique aux couleurs structurelles du thème actif :
 /// `context.palette.surface`.
 extension AppPaletteX on BuildContext {
-  AppPalette get palette =>
-      Theme.of(this).extension<AppPalette>() ?? AppPalette.light;
+  AppPalette get palette => Theme.of(this).extension<AppPalette>()!;
 }
