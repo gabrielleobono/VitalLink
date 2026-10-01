@@ -131,10 +131,7 @@ class DashboardScreen extends ConsumerWidget {
                     child: CircleAvatar(
                       radius: 18,
                       backgroundColor: palette.border,
-                      child: Icon(
-                        Icons.person,
-                        color: palette.textSecondary,
-                      ),
+                      child: Icon(Icons.person, color: palette.textSecondary),
                     ),
                   ),
                 ],

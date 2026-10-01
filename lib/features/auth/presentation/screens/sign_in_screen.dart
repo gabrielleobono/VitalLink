@@ -174,10 +174,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
             const SizedBox(height: 20),
             // Bloc informatif (un seul type de compte dans l'app).
             Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 14,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
                 color: AppColors.softBlue,
                 borderRadius: BorderRadius.circular(14),
