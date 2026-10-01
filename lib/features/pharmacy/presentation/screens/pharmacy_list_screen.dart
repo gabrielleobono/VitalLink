@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_palette.dart';
 import '../providers/pharmacy_provider.dart';
 import '../widgets/pharmacy_card.dart';
 import '../widgets/sector_map_preview.dart';
@@ -27,14 +28,15 @@ class _PharmacyListScreenState extends ConsumerState<PharmacyListScreen> {
     final pharmacies = ref.watch(filteredPharmaciesProvider);
     final activeFilter = ref.watch(pharmacyFilterProvider);
     final onDutyCount = pharmacies.where((p) => p.isOnDuty).length;
+    final palette = context.palette;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: palette.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: palette.surface,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: Icon(Icons.arrow_back, color: palette.textPrimary),
           onPressed: () {
             if (Navigator.canPop(context)) {
               Navigator.pop(context);
@@ -44,10 +46,10 @@ class _PharmacyListScreenState extends ConsumerState<PharmacyListScreen> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Pharmacies De Garde',
               style: TextStyle(
-                color: AppColors.textPrimary,
+                color: palette.textPrimary,
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
               ),
@@ -83,7 +85,7 @@ class _PharmacyListScreenState extends ConsumerState<PharmacyListScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.search, color: AppColors.textPrimary),
+            icon: Icon(Icons.search, color: palette.textPrimary),
             onPressed: () {},
           ),
           const Padding(
@@ -107,41 +109,46 @@ class _PharmacyListScreenState extends ConsumerState<PharmacyListScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: palette.surface,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.border),
+                    border: Border.all(color: palette.border),
                   ),
                   child: Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.search,
-                        color: AppColors.textSecondary,
+                        color: palette.textSecondary,
                         size: 22,
                       ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: TextField(
                           controller: _searchController,
+                          style: TextStyle(
+                            color: palette.textPrimary,
+                            fontSize: 14,
+                          ),
                           onChanged: (val) {
                             ref
                                 .read(pharmacySearchQueryProvider.notifier)
                                 .setQuery(val);
                           },
-                          decoration: const InputDecoration(
+                          decoration: InputDecoration(
                             hintText:
                                 'Rechercher une pharmacie ou un quarti...',
                             hintStyle: TextStyle(
-                              color: AppColors.textSecondary,
+                              color: palette.textSecondary,
                               fontSize: 14,
                             ),
                             border: InputBorder.none,
+                            filled: false,
                           ),
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.tune,
-                          color: AppColors.textSecondary,
+                          color: palette.textSecondary,
                           size: 20,
                         ),
                         onPressed: () {},
@@ -220,12 +227,12 @@ class _PharmacyListScreenState extends ConsumerState<PharmacyListScreen> {
               ),
               const SizedBox(height: 8),
               if (pharmacies.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.all(32),
+                Padding(
+                  padding: const EdgeInsets.all(32),
                   child: Center(
                     child: Text(
                       'Aucune pharmacie trouvée pour cette recherche.',
-                      style: TextStyle(color: AppColors.textSecondary),
+                      style: TextStyle(color: palette.textSecondary),
                     ),
                   ),
                 )

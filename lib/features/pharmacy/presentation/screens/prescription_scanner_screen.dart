@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_palette.dart';
 
 class PrescriptionScannerScreen extends StatefulWidget {
   const PrescriptionScannerScreen({super.key});
@@ -72,13 +73,14 @@ class _PrescriptionScannerScreenState extends State<PrescriptionScannerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: palette.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: palette.surface,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: Icon(Icons.arrow_back, color: palette.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
         title: Row(
@@ -96,10 +98,10 @@ class _PrescriptionScannerScreenState extends State<PrescriptionScannerScreen> {
               ),
             ),
             const SizedBox(width: 10),
-            const Text(
+            Text(
               "Scan d'ordonnance",
               style: TextStyle(
-                color: AppColors.textPrimary,
+                color: palette.textPrimary,
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
               ),
@@ -125,27 +127,27 @@ class _PrescriptionScannerScreenState extends State<PrescriptionScannerScreen> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: palette.surface,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.border),
+                border: Border.all(color: palette.border),
               ),
               child: Column(
                 children: [
-                  const Text(
+                  Text(
                     'Prenez en photo votre ordonnance',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+                      color: palette.textPrimary,
                     ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 6),
-                  const Text(
+                  Text(
                     "L'IA extrait automatiquement la dénomination, le dosage et la posologie.",
                     style: TextStyle(
                       fontSize: 12,
-                      color: AppColors.textSecondary,
+                      color: palette.textSecondary,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -222,9 +224,9 @@ class _PrescriptionScannerScreenState extends State<PrescriptionScannerScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: palette.surface,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppColors.border),
+                  border: Border.all(color: palette.border),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -287,9 +289,9 @@ class _PrescriptionScannerScreenState extends State<PrescriptionScannerScreen> {
                               ),
                               Text(
                                 'Indice de confiance : $_confidence%',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 12,
-                                  color: AppColors.textSecondary,
+                                  color: palette.textSecondary,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -299,12 +301,12 @@ class _PrescriptionScannerScreenState extends State<PrescriptionScannerScreen> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    const Text(
+                    Text(
                       'Libellé pharmaceutique vérifiable',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.textSecondary,
+                        color: palette.textSecondary,
                       ),
                     ),
                     const SizedBox(height: 6),
@@ -332,11 +334,11 @@ class _PrescriptionScannerScreenState extends State<PrescriptionScannerScreen> {
                       ),
                     ),
                     const SizedBox(height: 6),
-                    const Text(
+                    Text(
                       "ℹ️ L'IA assiste la saisie. Vérifiez le nom avant la recherche.",
                       style: TextStyle(
                         fontSize: 11,
-                        color: AppColors.textSecondary,
+                        color: palette.textSecondary,
                       ),
                     ),
                     const SizedBox(height: 14),
@@ -463,10 +465,10 @@ class _PrescriptionScannerScreenState extends State<PrescriptionScannerScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Trouver les officines de garde à contacter',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+              style: TextStyle(fontSize: 12, color: palette.textSecondary),
             ),
           ],
         ),

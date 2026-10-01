@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_palette.dart';
 import '../../data/models/pharmacy.dart';
 
 class PharmacyCard extends StatelessWidget {
@@ -37,13 +38,14 @@ class PharmacyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: palette.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border, width: 1),
+        border: Border.all(color: palette.border, width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
@@ -64,10 +66,10 @@ class PharmacyCard extends StatelessWidget {
                     Flexible(
                       child: Text(
                         pharmacy.name,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
+                          color: palette.textPrimary,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -131,9 +133,9 @@ class PharmacyCard extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             '${pharmacy.formattedDistance.isNotEmpty ? '${pharmacy.formattedDistance} • ' : ''}${pharmacy.address}',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
-              color: AppColors.textSecondary,
+              color: palette.textSecondary,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -179,15 +181,15 @@ class PharmacyCard extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.background,
+                    color: palette.background,
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.border),
+                    border: Border.all(color: palette.border),
                   ),
                   child: Text(
                     service,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11,
-                      color: AppColors.textSecondary,
+                      color: palette.textSecondary,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
