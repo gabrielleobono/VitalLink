@@ -1,20 +1,45 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:latlong2/latlong.dart' as latlong;
+
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_palette.dart';
+import '../../data/models/pharmacy.dart';
+import '../providers/pharmacy_provider.dart';
 
-class SectorMapPreview extends StatelessWidget {
+/// Centre de repli (Douala) si la position de l'utilisateur est indisponible
+/// et qu'aucune pharmacie n'a de coordonnées exploitables.
+const _fallbackCenter = latlong.LatLng(4.0511, 9.7679);
+
+class SectorMapPreview extends ConsumerWidget {
   final int onDutyCount;
   final String currentSector;
+  final List<Pharmacy> pharmacies;
 
   const SectorMapPreview({
     super.key,
     required this.onDutyCount,
-    this.currentSector = 'Akwa',
+    required this.pharmacies,
+    this.currentSector = 'votre secteur',
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final palette = context.palette;
+    final userPosition = ref.watch(userPositionProvider).asData?.value;
+    final userLatLng = userPosition != null
+        ? latlong.LatLng(userPosition.latitude, userPosition.longitude)
+        : null;
+    final center =
+        userLatLng ??
+        (pharmacies.isNotEmpty
+            ? latlong.LatLng(
+                pharmacies.first.latitude,
+                pharmacies.first.longitude,
+              )
+            : _fallbackCenter);
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(16),
@@ -48,100 +73,82 @@ class SectorMapPreview extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          Container(
-            height: 140,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              color: const Color(0xFFE2E8F0),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  const Color(0xFFBAE6FD).withValues(alpha: 0.7),
-                  const Color(0xFFBBF7D0).withValues(alpha: 0.7),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: SizedBox(
+              height: 180,
+              width: double.infinity,
+              child: FlutterMap(
+                options: MapOptions(
+                  initialCenter: center,
+                  initialZoom: 13,
+                  interactionOptions: const InteractionOptions(
+                    flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag,
+                  ),
+                ),
+                children: [
+                  TileLayer(
+                    urlTemplate:
+                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    userAgentPackageName: 'com.vitallink.vitallink',
+                  ),
+                  MarkerLayer(
+                    markers: [
+                      for (final pharmacy in pharmacies)
+                        if (pharmacy.latitude != 0.0 ||
+                            pharmacy.longitude != 0.0)
+                          Marker(
+                            point: latlong.LatLng(
+                              pharmacy.latitude,
+                              pharmacy.longitude,
+                            ),
+                            width: 32,
+                            height: 32,
+                            child: Icon(
+                              Icons.local_pharmacy,
+                              color: pharmacy.isOnDuty
+                                  ? AppColors.primaryRed
+                                  : AppColors.tealPrimary,
+                              size: 28,
+                            ),
+                          ),
+                      if (userLatLng != null)
+                        Marker(
+                          point: userLatLng,
+                          width: 22,
+                          height: 22,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: AppColors.info,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.white,
+                                width: 3,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.2),
+                                  blurRadius: 4,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  RichAttributionWidget(
+                    attributions: [
+                      TextSourceAttribution(
+                        '© OpenStreetMap contributors',
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
-            child: Stack(
-              children: [
-                Positioned(
-                  top: 20,
-                  left: 40,
-                  child: _buildPin(Icons.local_pharmacy, AppColors.primaryRed),
-                ),
-                Positioned(
-                  top: 50,
-                  right: 60,
-                  child: _buildPin(Icons.local_pharmacy, AppColors.primaryRed),
-                ),
-                Positioned(
-                  bottom: 45,
-                  left: 120,
-                  child: _buildPin(Icons.local_pharmacy, AppColors.tealPrimary),
-                ),
-                Positioned(
-                  bottom: 12,
-                  left: 12,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.08),
-                          blurRadius: 6,
-                        ),
-                      ],
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.my_location,
-                          size: 14,
-                          color: AppColors.primaryRed,
-                        ),
-                        SizedBox(width: 6),
-                        Text(
-                          'Position actuelle: Rue Joss',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildPin(IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(6),
-      decoration: BoxDecoration(
-        color: color,
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.4),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Icon(icon, size: 14, color: Colors.white),
     );
   }
 }

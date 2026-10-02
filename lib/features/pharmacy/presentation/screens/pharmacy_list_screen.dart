@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_palette.dart';
+import '../../../profile/presentation/providers/profile_providers.dart';
 import '../providers/pharmacy_provider.dart';
 import '../widgets/pharmacy_card.dart';
 import '../widgets/sector_map_preview.dart';
@@ -29,20 +32,17 @@ class _PharmacyListScreenState extends ConsumerState<PharmacyListScreen> {
     final activeFilter = ref.watch(pharmacyFilterProvider);
     final onDutyCount = pharmacies.where((p) => p.isOnDuty).length;
     final palette = context.palette;
+    final profile = ref.watch(userProfileProvider).asData?.value;
+    final cityLabel = profile != null && profile.city.isNotEmpty
+        ? profile.city
+        : 'votre secteur';
 
     return Scaffold(
       backgroundColor: palette.background,
       appBar: AppBar(
         backgroundColor: palette.surface,
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: palette.textPrimary),
-          onPressed: () {
-            if (Navigator.canPop(context)) {
-              Navigator.pop(context);
-            }
-          },
-        ),
+        automaticallyImplyLeading: false,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -61,18 +61,18 @@ class _PharmacyListScreenState extends ConsumerState<PharmacyListScreen> {
                 color: AppColors.tealLight,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.location_on,
                     size: 11,
                     color: AppColors.tealPrimary,
                   ),
-                  SizedBox(width: 4),
+                  const SizedBox(width: 4),
                   Text(
-                    'Douala – Akwa',
-                    style: TextStyle(
+                    cityLabel,
+                    style: const TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                       color: AppColors.tealPrimary,
@@ -84,16 +84,20 @@ class _PharmacyListScreenState extends ConsumerState<PharmacyListScreen> {
           ],
         ),
         actions: [
-          IconButton(
-            icon: Icon(Icons.search, color: palette.textPrimary),
-            onPressed: () {},
-          ),
-          const Padding(
-            padding: EdgeInsets.only(right: 16),
-            child: CircleAvatar(
-              radius: 17,
-              backgroundColor: AppColors.primaryRed,
-              child: Icon(Icons.person, color: Colors.white, size: 20),
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: InkWell(
+              onTap: () => context.go(AppRoutes.profile),
+              customBorder: const CircleBorder(),
+              child: CircleAvatar(
+                radius: 18,
+                backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+                child: const Icon(
+                  Icons.person,
+                  color: AppColors.primary,
+                  size: 20,
+                ),
+              ),
             ),
           ),
         ],
@@ -239,7 +243,11 @@ class _PharmacyListScreenState extends ConsumerState<PharmacyListScreen> {
               else
                 ...pharmacies.map((p) => PharmacyCard(pharmacy: p)),
               const SizedBox(height: 6),
-              SectorMapPreview(onDutyCount: onDutyCount),
+              SectorMapPreview(
+                onDutyCount: onDutyCount,
+                currentSector: cityLabel,
+                pharmacies: pharmacies,
+              ),
             ],
           ),
           Positioned(

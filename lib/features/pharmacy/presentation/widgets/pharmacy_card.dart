@@ -94,7 +94,7 @@ class PharmacyCard extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.tealBadge.withValues(alpha: 0.35),
+                    color: AppColors.tealLight,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: const Text(

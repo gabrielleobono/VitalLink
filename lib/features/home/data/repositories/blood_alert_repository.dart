@@ -24,6 +24,20 @@ class BloodAlertRepository {
         );
   }
 
+  /// Alertes publiées par [uid], quel que soit leur statut (pour l'écran
+  /// "Mes alertes" du Profil).
+  Stream<List<BloodAlert>> watchMyAlerts(String uid) {
+    return _collection
+        .where('createdBy', isEqualTo: uid)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => BloodAlert.fromFirestore(doc.id, doc.data()))
+              .toList(),
+        );
+  }
+
   Stream<BloodAlert?> watchAlertById(String id) {
     return _collection
         .doc(id)
