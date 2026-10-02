@@ -203,7 +203,17 @@ class _ProfileBody extends ConsumerWidget {
                     activeThumbColor: AppColors.success,
                     onChanged: (value) => ref
                         .read(donorAvailabilityControllerProvider)
-                        .setAvailable(value),
+                        .setAvailable(value)
+                        .catchError((_) {
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                "Impossible de mettre à jour : vérifiez votre connexion.",
+                              ),
+                            ),
+                          );
+                        }),
                   ),
                 ],
               ),
