@@ -58,13 +58,12 @@ class MyAlertsScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) =>
-            Center(
-              child: Text(
-                'Impossible de charger tes alertes.',
-                style: TextStyle(color: palette.textSecondary),
-              ),
-            ),
+        error: (error, _) => Center(
+          child: Text(
+            'Impossible de charger tes alertes.',
+            style: TextStyle(color: palette.textSecondary),
+          ),
+        ),
       ),
     );
   }

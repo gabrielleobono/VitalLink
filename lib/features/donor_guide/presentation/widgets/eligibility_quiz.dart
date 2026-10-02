@@ -97,8 +97,7 @@ final _questions = [
     unit: 'kg',
     minValid: 0,
     maxValid: 300,
-    isDisqualifying: (weight) =>
-        weight < DonorEligibilityConstants.minWeightKg,
+    isDisqualifying: (weight) => weight < DonorEligibilityConstants.minWeightKg,
     failureReason:
         'Le poids minimal requis est de '
         '${DonorEligibilityConstants.minWeightKg} kg.',
@@ -489,7 +488,8 @@ class _TypingBubbleState extends State<_TypingBubble>
                   mainAxisSize: MainAxisSize.min,
                   children: List.generate(3, (i) {
                     final phase = (_controller.value - i * 0.2) % 1.0;
-                    final scale = 0.6 + 0.4 * (1 - (phase - 0.5).abs() * 2).clamp(0, 1);
+                    final scale =
+                        0.6 + 0.4 * (1 - (phase - 0.5).abs() * 2).clamp(0, 1);
                     return Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 2),
                       child: Transform.scale(
@@ -558,16 +558,9 @@ class _ChatBubble extends StatelessWidget {
       child: line.fromVita
           ? Row(
               crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                const _VitaAvatar(),
-                const SizedBox(width: 8),
-                bubble,
-              ],
+              children: [const _VitaAvatar(), const SizedBox(width: 8), bubble],
             )
-          : Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [bubble],
-            ),
+          : Row(mainAxisAlignment: MainAxisAlignment.end, children: [bubble]),
     );
   }
 }

@@ -121,10 +121,7 @@ class SectorMapPreview extends ConsumerWidget {
                             decoration: BoxDecoration(
                               color: AppColors.info,
                               shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Colors.white,
-                                width: 3,
-                              ),
+                              border: Border.all(color: Colors.white, width: 3),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.black.withValues(alpha: 0.2),
@@ -138,9 +135,7 @@ class SectorMapPreview extends ConsumerWidget {
                   ),
                   RichAttributionWidget(
                     attributions: [
-                      TextSourceAttribution(
-                        '© OpenStreetMap contributors',
-                      ),
+                      TextSourceAttribution('© OpenStreetMap contributors'),
                     ],
                   ),
                 ],
