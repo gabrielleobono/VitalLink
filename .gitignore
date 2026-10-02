@@ -51,4 +51,7 @@ app.*.map.json
 .vscode/
 android/build/
 
+# Clés d'API (Rodium, etc.) — jamais commitées. Voir config/secrets.example.json.
+config/secrets.json
+
 

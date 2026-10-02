@@ -12,7 +12,7 @@ Future<void> main() async {
   final firestore = FirebaseFirestore.instance;
   final now = DateTime.now();
 
-  print('⏳ Démarrage du peuplement Firestore (Module 6)...');
+  print(' Démarrage du peuplement Firestore (Module 6)...');
   final batch = firestore.batch();
 
   // 1. HÔPITAUX DE RÉFÉRENCE (Collection hospitals/{id} - champs snake_case)
@@ -61,7 +61,7 @@ Future<void> main() async {
     final data = Map<String, dynamic>.from(hosp)..remove('id');
     batch.set(hospitalsCol.doc(id), data);
   }
-  print('✅ 4 hôpitaux enregistrés');
+  print(' 4 hôpitaux enregistrés');
 
   // 2. PHARMACIES DE GARDE (Collection pharmacies/{id} - camelCase)
   final pharmacies = [
@@ -136,7 +136,7 @@ Future<void> main() async {
   for (final ph in pharmacies) {
     batch.set(pharmaciesCol.doc(), ph);
   }
-  print('✅ 5 pharmacies enregistrées');
+  print(' 5 pharmacies enregistrées');
 
   // 3. ALERTES SANG POUR L'ACCUEIL (Collection bloodAlerts/{id})
   final bloodAlertsCol = firestore.collection('bloodAlerts');
@@ -178,10 +178,8 @@ Future<void> main() async {
     'bloodGroupTagLabel': 'Besoin A+',
     'ctaSubtitleText': 'Intervention programmée demain matin',
   });
-  print('✅ 2 alertes sang enregistrées');
+  print(' 2 alertes sang enregistrées');
 
   await batch.commit();
-  print(
-    '🎉 Module 6 terminé : base Firestore prête pour les tests et la démo !',
-  );
+  print('Module 6 terminé : base Firestore prête pour les tests et la démo !');
 }

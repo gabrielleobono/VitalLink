@@ -1,20 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_palette.dart';
+import '../providers/blood_alert_notification_watcher.dart';
 
 /// Coquille de navigation principale (Accueil / Urgences / Pharmacies /
 /// Profil), reprise de la bottom nav des maquettes Figma : icône simple
 /// quand l'onglet est inactif, badge rouge arrondi (squircle) autour de
 /// l'icône blanche quand il est actif.
-class HomeShell extends StatelessWidget {
+class HomeShell extends ConsumerWidget {
   const HomeShell({super.key, required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Garde le watcher de notifications d'alertes sang vivant tant que
+    // l'utilisateur reste dans l'app connectée (quel que soit l'onglet).
+    ref.watch(bloodAlertNotificationWatcherProvider);
     final palette = context.palette;
     return Scaffold(
       body: navigationShell,

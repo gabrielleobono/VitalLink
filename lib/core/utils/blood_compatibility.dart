@@ -76,6 +76,15 @@ abstract final class BloodCompatibility {
   static Set<BloodGroup> compatibleDonorsFor(BloodGroup receiver) =>
       _compatibleDonors[receiver]!;
 
+  /// Parse un libellé Firestore ("O+", "AB-", ...) vers l'enum, ou `null` si
+  /// le texte ne correspond à aucun groupe connu.
+  static BloodGroup? fromLabel(String label) {
+    for (final group in BloodGroup.values) {
+      if (group.label == label) return group;
+    }
+    return null;
+  }
+
   /// `true` si un donneur de groupe [donor] peut donner à un receveur de
   /// groupe [receiver].
   static bool canDonateTo({
@@ -106,7 +115,11 @@ abstract final class BloodCompatibility {
 /// Tableau visuel de compatibilité donneurs/receveurs, pour l'écran du guide
 /// donneur (`donor_guide`).
 class CompatibilityTable extends StatelessWidget {
-  const CompatibilityTable({super.key});
+  const CompatibilityTable({super.key, this.highlightedGroup});
+
+  /// Groupe à mettre en avant (ex: celui du donneur connecté), ou `null`
+  /// pour un tableau neutre.
+  final BloodGroup? highlightedGroup;
 
   @override
   Widget build(BuildContext context) {
@@ -135,7 +148,11 @@ class CompatibilityTable extends StatelessWidget {
     final donors = BloodCompatibility.compatibleDonorsFor(
       receiver,
     ).map((g) => g.label).join(', ');
+    final isHighlighted = receiver == highlightedGroup;
     return TableRow(
+      decoration: isHighlighted
+          ? BoxDecoration(color: AppColors.softBlue)
+          : null,
       children: [
         _Cell(receiver.label, bold: true, color: AppColors.primary),
         _Cell(donors, color: palette.textPrimary),
