@@ -1,4 +1,4 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+﻿import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../data/models/pharmacy.dart';
 import '../../data/repositories/pharmacy_repository.dart';
@@ -87,10 +87,12 @@ final filteredPharmaciesProvider = Provider<List<Pharmacy>>((ref) {
     return pharmacy;
   }).toList();
 
+  // Filtrage : Officines de garde confirmée uniquement
   if (filter == PharmacyFilter.onDutyOnly) {
     list = list.where((p) => p.isOnDuty).toList();
   }
 
+  // Filtrage par texte de recherche
   if (query.isNotEmpty) {
     list = list.where((p) {
       final matchName = p.name.toLowerCase().contains(query);
@@ -103,6 +105,7 @@ final filteredPharmaciesProvider = Provider<List<Pharmacy>>((ref) {
     }).toList();
   }
 
+  // Tri par proximité puis statut de garde
   list.sort((a, b) {
     if (a.distanceInMeters != null && b.distanceInMeters != null) {
       return a.distanceInMeters!.compareTo(b.distanceInMeters!);

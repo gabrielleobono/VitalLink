@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -52,16 +52,7 @@ class ScanScreen extends ConsumerWidget {
             ),
           ],
         ),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 16),
-            child: CircleAvatar(
-              radius: 17,
-              backgroundColor: Color(0xFFDC2626),
-              child: Icon(Icons.person, color: Colors.white, size: 20),
-            ),
-          ),
-        ],
+
       ),
       body: SafeArea(
         child: Column(
@@ -131,7 +122,7 @@ class ScanScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'L\'IA extrait automatiquement la\ndénomination, le dosage et la posologie.',
+            'L\'IA extrait automatiquement la\ndÃ©nomination, le dosage et la posologie.',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: palette.textSecondary,
@@ -188,7 +179,7 @@ class ScanScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            'Extraction des données médicales par l\'IA',
+            'Extraction des donnÃ©es mÃ©dicales par l\'IA',
             style: TextStyle(color: palette.textSecondary, fontSize: 12),
           ),
         ],
@@ -251,7 +242,7 @@ class ScanScreen extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: const Text(
-                        'Reconnaissance IA terminée',
+                        'Reconnaissance IA terminÃ©e',
                         style: TextStyle(
                           color: Color(0xFF059669),
                           fontWeight: FontWeight.w600,
@@ -261,7 +252,7 @@ class ScanScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'MÉDICAMENT DÉTECTÉ PAR L\'IA',
+                      'MÃ‰DICAMENT DÃ‰TECTÃ‰ PAR L\'IA',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
@@ -285,7 +276,7 @@ class ScanScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 18),
           Text(
-            'Libellé pharmaceutique vérifiable',
+            'LibellÃ© pharmaceutique vÃ©rifiable',
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
@@ -321,7 +312,7 @@ class ScanScreen extends ConsumerWidget {
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
-                  'L\'IA assiste la saisie. Vérifiez le nom avant la recherche.',
+                  'L\'IA assiste la saisie. VÃ©rifiez le nom avant la recherche.',
                   style: TextStyle(
                     color: palette.textSecondary,
                     fontSize: 11,
@@ -353,7 +344,7 @@ class ScanScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        result.dosage ?? 'Non précisé',
+                        result.dosage ?? 'Non prÃ©cisÃ©',
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
@@ -384,7 +375,7 @@ class ScanScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        result.packaging ?? 'Non précisé',
+                        result.packaging ?? 'Non prÃ©cisÃ©',
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
@@ -407,7 +398,7 @@ class ScanScreen extends ConsumerWidget {
             child: const Row(
               children: [
                 Text(
-                  'Officines de garde identifiées',
+                  'Officines de garde identifiÃ©es',
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -416,7 +407,7 @@ class ScanScreen extends ConsumerWidget {
                 ),
                 Spacer(),
                 Text(
-                  'Prêt à localiser',
+                  'PrÃªt Ã  localiser',
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
@@ -509,7 +500,7 @@ class ScanScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Trouver les officines de garde à contacter',
+            'Trouver les officines de garde Ã  contacter',
             style: TextStyle(color: palette.textSecondary, fontSize: 12),
           ),
         ],
@@ -539,3 +530,4 @@ class ScanScreen extends ConsumerWidget {
     );
   }
 }
+

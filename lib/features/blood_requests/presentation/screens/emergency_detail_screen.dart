@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../../core/services/launcher_service.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -9,11 +10,31 @@ import '../../../home/presentation/providers/blood_alert_provider.dart';
 import '../providers/hospital_provider.dart';
 import '../widgets/confirm_donation_sheet.dart';
 
-/// Écran "Détails de l'urgence" — ouvert depuis une carte d'alerte du Home.
+/// Écran "Détails de l'urgence" — ouvert depuis une carte d'alerte.
 class EmergencyDetailScreen extends ConsumerWidget {
   const EmergencyDetailScreen({super.key, required this.alertId});
 
   final String alertId;
+
+  void _shareAlert(BuildContext context, BloodAlert alert) {
+    final shortCode = alert.id.length > 6
+        ? alert.id.substring(0, 6).toUpperCase()
+        : alert.id.toUpperCase();
+
+    final text = '🚨 URGENCE SANG - VitalLink 🚨\n\n'
+        'Besoin urgent de ${alert.units} poche(s) de sang groupe [${alert.recipientBloodGroup}] !\n'
+        '🏥 Établissement : ${alert.hospitalName}\n'
+        '📍 Quartier / Ville : ${alert.district}\n'
+        'ℹ️ Service : ${alert.serviceInfo}\n'
+        '🆔 Code Alerte : #$shortCode\n\n'
+        'Si vous êtes du groupe ${alert.recipientBloodGroup} ou compatible, votre don peut sauver une vie dès maintenant !\n'
+        '📲 Ouvrez l\'application VitalLink pour vous engager ou rendez-vous directement à l\'accueil des urgences.';
+
+    Share.share(
+      text,
+      subject: 'Urgence Sang ${alert.recipientBloodGroup} - ${alert.hospitalName}',
+    );
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -25,6 +46,7 @@ class EmergencyDetailScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: palette.surface,
         elevation: 0,
+        scrolledUnderElevation: 0,
         title: Text(
           "Détails de l'urgence",
           style: TextStyle(
@@ -33,13 +55,17 @@ class EmergencyDetailScreen extends ConsumerWidget {
           ),
         ),
         actions: [
-          IconButton(
-            icon: Icon(Icons.share_outlined, color: palette.textPrimary),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Partage bientôt disponible.')),
-              );
-            },
+          alertAsync.when(
+            data: (alert) => alert != null
+                ? IconButton(
+                    icon: const Icon(Icons.share_rounded),
+                    color: palette.textPrimary,
+                    tooltip: 'Partager l\'alerte',
+                    onPressed: () => _shareAlert(context, alert),
+                  )
+                : const SizedBox.shrink(),
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
           ),
         ],
       ),
@@ -55,10 +81,12 @@ class EmergencyDetailScreen extends ConsumerWidget {
           }
           return _EmergencyDetailBody(alert: alert);
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: AppColors.primaryRed),
+        ),
         error: (error, _) => Center(
           child: Text(
-            'Erreur de chargement : $error',
+            'Impossible de charger l\'alerte.',
             style: TextStyle(color: palette.textSecondary),
           ),
         ),
@@ -73,127 +101,90 @@ class _EmergencyDetailBody extends ConsumerWidget {
   final BloodAlert alert;
 
   static const _requirements = [
-    'Âge 18-65 ans',
-    'Poids ≥ 50 kg',
-    'Dernier don ≥ 90 jours',
-    "Carte nationale d'identité",
+    'Âge : 18 - 60 ans',
+    'Poids : minimum 50 kg',
+    'Être en bonne santé',
+    'Ne pas être à jeun',
+    'Bien s\'hydrater',
   ];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final palette = context.palette;
     final hospitalAsync = ref.watch(hospitalProvider(alert.hospitalId));
-    final isVerified = alert.alertBadgeVariant == 'verified';
-    final headline = alert.criticality == 'critical'
-        ? '${alert.units} poche${alert.units > 1 ? 's' : ''} requise${alert.units > 1 ? 's' : ''} en urgence absolue'
-        : alert.ctaSubtitleText;
-    final shortCode =
-        '#VL-${alert.id.length >= 4 ? alert.id.substring(alert.id.length - 4).toUpperCase() : alert.id.toUpperCase()}';
+    final shortCode = alert.id.length > 6
+        ? alert.id.substring(0, 6).toUpperCase()
+        : alert.id.toUpperCase();
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+      padding: const EdgeInsets.all(16),
       children: [
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: palette.surface,
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(20),
             border: Border.all(color: palette.border),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 56,
-                    height: 56,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryRed,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text(
-                          'GROUPE',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 8,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        Text(
-                          alert.recipientBloodGroup,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ],
-                    ),
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFDC2626), Color(0xFF991B1B)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isVerified
-                                ? AppColors.tealLight
-                                : AppColors.softBlue,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            alert.alertBadgeLabel,
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              color: isVerified
-                                  ? AppColors.tealPrimary
-                                  : AppColors.info,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          headline,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: palette.textPrimary,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '${alert.district} • ${alert.distanceKm.toStringAsFixed(1)} km de votre position',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: palette.textSecondary,
-                          ),
-                        ),
-                      ],
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primaryRed.withValues(alpha: 0.35),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
                     ),
+                  ],
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  alert.recipientBloodGroup,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 26,
+                    fontWeight: FontWeight.w900,
                   ),
-                ],
+                ),
               ),
-              const Divider(height: 20),
+              const SizedBox(height: 12),
               Text(
-                'Posté ${alert.relativeCreatedAt.toLowerCase()}',
-                style: TextStyle(fontSize: 12, color: palette.textSecondary),
+                'Groupe sanguin requis : ${alert.recipientBloodGroup}',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: palette.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Alerte #${shortCode}',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: palette.textSecondary,
+                ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 14),
         hospitalAsync.when(
           data: (hospital) => Container(
             padding: const EdgeInsets.all(16),
@@ -234,7 +225,7 @@ class _EmergencyDetailBody extends ConsumerWidget {
                         onPressed: hospital == null
                             ? null
                             : () => LauncherService.callPhone(hospital.phone),
-                        icon: const Icon(Icons.call, size: 16),
+                        icon: const Icon(Icons.call_rounded, size: 16),
                         label: const Text("Appeler l'hôpital"),
                         style: OutlinedButton.styleFrom(
                           backgroundColor: AppColors.darkSlate,
@@ -256,7 +247,7 @@ class _EmergencyDetailBody extends ConsumerWidget {
                                 latitude: hospital.location.latitude,
                                 longitude: hospital.location.longitude,
                               ),
-                        icon: const Icon(Icons.directions, size: 16),
+                        icon: const Icon(Icons.directions_rounded, size: 16),
                         label: const Text('Itinéraire Maps'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: palette.textPrimary,
@@ -293,7 +284,7 @@ class _EmergencyDetailBody extends ConsumerWidget {
               Text(
                 '${alert.units} poche${alert.units > 1 ? 's' : ''} nécessaire${alert.units > 1 ? 's' : ''}',
                 style: TextStyle(
-                  fontSize: 13,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
                   color: palette.textPrimary,
                 ),
@@ -316,7 +307,7 @@ class _EmergencyDetailBody extends ConsumerWidget {
                       ),
                       const TextSpan(text: ' en mentionnant l\'alerte '),
                       TextSpan(
-                        text: shortCode,
+                        text: '#$shortCode',
                         style: const TextStyle(fontWeight: FontWeight.w700),
                       ),
                       const TextSpan(text: ' pour un accueil prioritaire.'),
@@ -365,7 +356,7 @@ class _EmergencyDetailBody extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 20),
-        ElevatedButton(
+        ElevatedButton.icon(
           onPressed: () {
             final hospital = hospitalAsync.value;
             showConfirmDonationSheet(
@@ -374,18 +365,19 @@ class _EmergencyDetailBody extends ConsumerWidget {
               hospital: hospital,
             );
           },
+          icon: const Icon(Icons.volunteer_activism_rounded, size: 18),
+          label: const Text(
+            "Je viens donner (M'engager)",
+            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+          ),
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
+            backgroundColor: AppColors.primaryRed,
             foregroundColor: Colors.white,
             minimumSize: const Size.fromHeight(52),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(14),
             ),
             elevation: 0,
-          ),
-          child: const Text(
-            "Je viens donner (M'engager)",
-            style: TextStyle(fontWeight: FontWeight.w700),
           ),
         ),
         const SizedBox(height: 8),
