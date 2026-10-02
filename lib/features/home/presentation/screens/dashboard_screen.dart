@@ -6,11 +6,12 @@ import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_palette.dart';
 import '../../../../core/theme/theme_mode_provider.dart';
+import '../../../profile/presentation/providers/profile_providers.dart';
 import '../providers/blood_alert_provider.dart';
 import '../widgets/blood_alert_card.dart';
 
 /// Écran "Accueil" : actions rapides + alertes de sang à proximité,
-/// alimenté en temps réel par Firestore (`bloodAlerts`).
+
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
@@ -24,14 +25,19 @@ class DashboardScreen extends ConsumerWidget {
         (themeMode == ThemeMode.system &&
             MediaQuery.platformBrightnessOf(context) == Brightness.dark);
 
+    final userProfileAsync = ref.watch(userProfileProvider);
+    final profile = userProfileAsync.asData?.value;
+    final locationLabel = profile != null && profile.city.isNotEmpty
+        ? '${profile.city}, ${profile.country == "Cameroun" ? "CM" : profile.country}'
+        : 'Cameroun';
+
     return Scaffold(
       backgroundColor: palette.background,
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.only(bottom: 24),
+        child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
               child: Row(
                 children: [
                   Container(
@@ -69,7 +75,7 @@ class DashboardScreen extends ConsumerWidget {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              'Douala, CM',
+                              locationLabel,
                               style: TextStyle(
                                 fontSize: 11,
                                 color: palette.textSecondary,
@@ -100,7 +106,9 @@ class DashboardScreen extends ConsumerWidget {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          'Donneur O+',
+                          profile?.isDonor == true
+                              ? 'Donneur actif'
+                              : 'Citoyen',
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
@@ -130,109 +138,126 @@ class DashboardScreen extends ConsumerWidget {
                     customBorder: const CircleBorder(),
                     child: CircleAvatar(
                       radius: 18,
-                      backgroundColor: palette.border,
-                      child: Icon(Icons.person, color: palette.textSecondary),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _ActionCard(
-                      icon: Icons.water_drop,
-                      title: 'Urgence Sang',
-                      subtitle: 'Lancer ou aider',
-                      backgroundColor: AppColors.primary,
-                      onTap: () => context.go(AppRoutes.emergencies),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _ActionCard(
-                      icon: Icons.local_pharmacy_rounded,
-                      title: 'Pharmacies',
-                      subtitle: 'De garde ce soir',
-                      backgroundColor: AppColors.darkSlate,
-                      onTap: () => context.go(AppRoutes.pharmacies),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  const Icon(Icons.circle, size: 8, color: AppColors.primary),
-                  const SizedBox(width: 6),
-                  Text(
-                    'Urgences à proximité',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: palette.textPrimary,
-                    ),
-                  ),
-                  const Spacer(),
-                  alertsAsync.when(
-                    data: (alerts) => Text(
-                      'Voir tout (${alerts.length})',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                      backgroundColor: AppColors.primary.withValues(
+                        alpha: 0.12,
+                      ),
+                      child: const Icon(
+                        Icons.person,
                         color: AppColors.primary,
+                        size: 20,
                       ),
                     ),
-                    loading: () => const SizedBox.shrink(),
-                    error: (_, _) => const SizedBox.shrink(),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 8),
-            alertsAsync.when(
-              data: (alerts) {
-                if (alerts.isEmpty) {
-                  return Padding(
-                    padding: const EdgeInsets.all(32),
-                    child: Center(
-                      child: Text(
-                        'Aucune urgence à proximité pour le moment.',
-                        style: TextStyle(color: palette.textSecondary),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.only(bottom: 24),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: _ActionCard(
+                            icon: Icons.water_drop,
+                            title: 'Urgence Sang',
+                            subtitle: 'Lancer ou aider',
+                            backgroundColor: AppColors.primary,
+                            onTap: () => context.go(AppRoutes.emergencies),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _ActionCard(
+                            icon: Icons.local_pharmacy_rounded,
+                            title: 'Pharmacies',
+                            subtitle: 'De garde ce soir',
+                            backgroundColor: AppColors.darkSlate,
+                            onTap: () => context.go(AppRoutes.pharmacies),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.circle,
+                          size: 8,
+                          color: AppColors.primary,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Urgences à proximité',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: palette.textPrimary,
+                          ),
+                        ),
+                        const Spacer(),
+                        alertsAsync.when(
+                          data: (alerts) => Text(
+                            'Voir tout (${alerts.length})',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                          loading: () => const SizedBox.shrink(),
+                          error: (_, _) => const SizedBox.shrink(),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  alertsAsync.when(
+                    data: (alerts) {
+                      if (alerts.isEmpty) {
+                        return Padding(
+                          padding: const EdgeInsets.all(32),
+                          child: Center(
+                            child: Text(
+                              'Aucune urgence à proximité pour le moment.',
+                              style: TextStyle(color: palette.textSecondary),
+                            ),
+                          ),
+                        );
+                      }
+                      return Column(
+                        children: [
+                          for (final alert in alerts)
+                            BloodAlertCard(
+                              alert: alert,
+                              onTap: () => context.push(
+                                AppRoutes.emergencyDetail(alert.id),
+                              ),
+                            ),
+                        ],
+                      );
+                    },
+                    loading: () => const Padding(
+                      padding: EdgeInsets.all(32),
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                    error: (error, _) => Padding(
+                      padding: const EdgeInsets.all(32),
+                      child: Center(
+                        child: Text(
+                          'Erreur de chargement des alertes : $error',
+                          style: TextStyle(color: palette.textSecondary),
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                     ),
-                  );
-                }
-                return Column(
-                  children: [
-                    for (final alert in alerts)
-                      BloodAlertCard(
-                        alert: alert,
-                        onTap: () =>
-                            context.push(AppRoutes.emergencyDetail(alert.id)),
-                      ),
-                  ],
-                );
-              },
-              loading: () => const Padding(
-                padding: EdgeInsets.all(32),
-                child: Center(child: CircularProgressIndicator()),
-              ),
-              error: (error, _) => Padding(
-                padding: const EdgeInsets.all(32),
-                child: Center(
-                  child: Text(
-                    'Erreur de chargement des alertes : $error',
-                    style: TextStyle(color: palette.textSecondary),
-                    textAlign: TextAlign.center,
                   ),
-                ),
+                ],
               ),
             ),
           ],
