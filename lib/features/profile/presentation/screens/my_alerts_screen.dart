@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/app_router.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_palette.dart';
 import '../../../home/presentation/providers/blood_alert_provider.dart';
 import '../../../home/presentation/widgets/blood_alert_card.dart';
@@ -22,12 +23,35 @@ class MyAlertsScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: palette.surface,
         elevation: 0,
-        title: Text(
-          'Mes alertes',
-          style: TextStyle(
-            color: palette.textPrimary,
-            fontWeight: FontWeight.w700,
-          ),
+        scrolledUnderElevation: 0,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Mes alertes',
+              style: TextStyle(
+                color: palette.textPrimary,
+                fontWeight: FontWeight.w800,
+                fontSize: 18,
+              ),
+            ),
+            const SizedBox(height: 2),
+            alertsAsync.when(
+              data: (alerts) => Text(
+                '${alerts.length} alerte${alerts.length > 1 ? 's' : ''} créée${alerts.length > 1 ? 's' : ''}',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: palette.textSecondary,
+                ),
+              ),
+              loading: () => Text(
+                'Chargement...',
+                style: TextStyle(fontSize: 12, color: palette.textSecondary),
+              ),
+              error: (err, stack) => const SizedBox.shrink(),
+            ),
+          ],
         ),
       ),
       body: alertsAsync.when(
@@ -35,19 +59,49 @@ class MyAlertsScreen extends ConsumerWidget {
           if (alerts.isEmpty) {
             return Center(
               child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Text(
-                  "Tu n'as publié aucune alerte pour l'instant.",
-                  style: TextStyle(color: palette.textSecondary),
-                  textAlign: TextAlign.center,
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 72,
+                      height: 72,
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryRed.withValues(alpha: 0.08),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.campaign_outlined,
+                        size: 36,
+                        color: AppColors.primaryRed,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Aucune alerte publiée',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: palette.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Tu n\'as publié aucune alerte de sang pour l\'instant.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: palette.textSecondary,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             );
           }
-          return ListView.separated(
-            padding: const EdgeInsets.all(16),
+          return ListView.builder(
+            padding: const EdgeInsets.only(top: 8, bottom: 24),
             itemCount: alerts.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
               final alert = alerts[index];
               return BloodAlertCard(
@@ -57,7 +111,9 @@ class MyAlertsScreen extends ConsumerWidget {
             },
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: AppColors.primaryRed),
+        ),
         error: (error, _) => Center(
           child: Text(
             'Impossible de charger tes alertes.',

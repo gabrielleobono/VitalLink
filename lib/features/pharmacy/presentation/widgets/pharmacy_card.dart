@@ -11,26 +11,28 @@ class PharmacyCard extends StatelessWidget {
 
   Future<void> _makeCall(BuildContext context) async {
     final phone = pharmacy.phoneNumber.replaceAll(RegExp(r'\s+'), '');
-    if (phone.isEmpty) return;
-
+    if (phone.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Numéro de téléphone non disponible')),
+      );
+      return;
+    }
     final uri = Uri.parse('tel:$phone');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     } else {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Impossible d\'appeler le $phone')),
+          const SnackBar(content: Text('Impossible de lancer l\'appel')),
         );
       }
     }
   }
 
   Future<void> _openMap() async {
-    final query = '${pharmacy.name}, ${pharmacy.address}';
     final uri = Uri.parse(
-      'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(query)}',
+      'https://www.google.com/maps/search/?api=1&query=${pharmacy.latitude},${pharmacy.longitude}',
     );
-
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
@@ -39,18 +41,22 @@ class PharmacyCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
+    final subtitleText = pharmacy.formattedDistance.isNotEmpty
+        ? '${pharmacy.formattedDistance} \u2022 ${pharmacy.address}'
+        : pharmacy.address;
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: palette.surface,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: palette.border, width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 10,
-            offset: const Offset(0, 4),
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -61,46 +67,32 @@ class PharmacyCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: Row(
-                  children: [
-                    Flexible(
-                      child: Text(
-                        pharmacy.name,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: palette.textPrimary,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    if (pharmacy.isVerified) ...[
-                      const SizedBox(width: 6),
-                      const Icon(
-                        Icons.verified,
-                        size: 18,
-                        color: AppColors.tealPrimary,
-                      ),
-                    ],
-                  ],
+                child: Text(
+                  pharmacy.name,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: palette.textPrimary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               const SizedBox(width: 8),
               if (pharmacy.isOnDuty)
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
+                    horizontal: 9,
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
                     color: AppColors.tealLight,
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Text(
                     'DE GARDE CE SOIR',
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: 10,
                       fontWeight: FontWeight.w800,
                       color: AppColors.tealPrimary,
                       letterSpacing: 0.3,
@@ -110,58 +102,73 @@ class PharmacyCard extends StatelessWidget {
               else
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
+                    horizontal: 9,
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.purpleLight,
-                    borderRadius: BorderRadius.circular(20),
+                    color: palette.background,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: palette.border),
                   ),
                   child: Text(
                     pharmacy.dutySchedule.isNotEmpty
                         ? pharmacy.dutySchedule
                         : 'Ouvert',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.purpleText,
+                      fontWeight: FontWeight.w600,
+                      color: palette.textSecondary,
                     ),
                   ),
                 ),
             ],
           ),
           const SizedBox(height: 6),
-          Text(
-            '${pharmacy.formattedDistance.isNotEmpty ? '${pharmacy.formattedDistance} • ' : ''}${pharmacy.address}',
-            style: TextStyle(
-              fontSize: 13,
-              color: palette.textSecondary,
-              fontWeight: FontWeight.w500,
-            ),
+          Row(
+            children: [
+              Icon(
+                Icons.location_on_outlined,
+                size: 14,
+                color: palette.textSecondary,
+              ),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  subtitleText,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: palette.textSecondary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
           ),
           if (pharmacy.isOnDuty && pharmacy.dutySchedule.isNotEmpty) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
               decoration: BoxDecoration(
-                color: AppColors.softBlue.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(12),
+                color: AppColors.tealLight.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(10),
               ),
               child: Row(
                 children: [
                   const Icon(
                     Icons.access_time_rounded,
-                    size: 16,
+                    size: 15,
                     color: AppColors.tealPrimary,
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 6),
                   Expanded(
                     child: Text(
                       pharmacy.dutySchedule,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
+                        color: palette.textPrimary,
                       ),
                     ),
                   ),
@@ -170,7 +177,7 @@ class PharmacyCard extends StatelessWidget {
             ),
           ],
           if (pharmacy.services.isNotEmpty) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             Wrap(
               spacing: 6,
               runSpacing: 6,
@@ -178,11 +185,11 @@ class PharmacyCard extends StatelessWidget {
                 return Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 8,
-                    vertical: 4,
+                    vertical: 3,
                   ),
                   decoration: BoxDecoration(
                     color: palette.background,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(6),
                     border: Border.all(color: palette.border),
                   ),
                   child: Text(
@@ -197,15 +204,15 @@ class PharmacyCard extends StatelessWidget {
               }).toList(),
             ),
           ],
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
                 child: SizedBox(
-                  height: 44,
+                  height: 42,
                   child: ElevatedButton.icon(
                     onPressed: () => _makeCall(context),
-                    icon: const Icon(Icons.phone_in_talk, size: 18),
+                    icon: const Icon(Icons.phone_rounded, size: 17),
                     label: const Text(
                       'Appeler direct',
                       style: TextStyle(
@@ -214,15 +221,11 @@ class PharmacyCard extends StatelessWidget {
                       ),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: pharmacy.isOnDuty
-                          ? AppColors.primaryRed
-                          : AppColors.softBlue,
-                      foregroundColor: pharmacy.isOnDuty
-                          ? Colors.white
-                          : AppColors.tealPrimary,
+                      backgroundColor: const Color(0xFF059669),
+                      foregroundColor: Colors.white,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                   ),
@@ -231,23 +234,30 @@ class PharmacyCard extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: SizedBox(
-                  height: 44,
-                  child: ElevatedButton.icon(
+                  height: 42,
+                  child: OutlinedButton.icon(
                     onPressed: _openMap,
-                    icon: const Icon(Icons.directions, size: 18),
+                    icon: const Icon(
+                      Icons.directions_rounded,
+                      size: 17,
+                      color: AppColors.tealPrimary,
+                    ),
                     label: const Text(
                       'Itinéraire Maps',
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
+                        color: AppColors.tealPrimary,
                       ),
                     ),
-                    style: ElevatedButton.styleFrom(
+                    style: OutlinedButton.styleFrom(
                       backgroundColor: AppColors.softBlue,
-                      foregroundColor: AppColors.tealPrimary,
+                      side: BorderSide(
+                        color: AppColors.tealPrimary.withValues(alpha: 0.2),
+                      ),
                       elevation: 0,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                   ),

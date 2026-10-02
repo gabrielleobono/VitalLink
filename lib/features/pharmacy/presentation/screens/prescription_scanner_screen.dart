@@ -79,8 +79,9 @@ class _PrescriptionScannerScreenState extends State<PrescriptionScannerScreen> {
       appBar: AppBar(
         backgroundColor: palette.surface,
         elevation: 0,
+        scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: palette.textPrimary),
+          icon: Icon(Icons.arrow_back_rounded, color: palette.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
         title: Row(
@@ -88,13 +89,13 @@ class _PrescriptionScannerScreenState extends State<PrescriptionScannerScreen> {
             Container(
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: AppColors.primaryRed,
+                color: AppColors.tealLight,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Icon(
-                Icons.medical_services_rounded,
-                color: Colors.white,
-                size: 18,
+                Icons.document_scanner_rounded,
+                color: AppColors.tealPrimary,
+                size: 20,
               ),
             ),
             const SizedBox(width: 10),
@@ -108,16 +109,6 @@ class _PrescriptionScannerScreenState extends State<PrescriptionScannerScreen> {
             ),
           ],
         ),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 16),
-            child: CircleAvatar(
-              radius: 18,
-              backgroundColor: AppColors.primaryRed,
-              child: Icon(Icons.person, color: Colors.white, size: 20),
-            ),
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -142,334 +133,212 @@ class _PrescriptionScannerScreenState extends State<PrescriptionScannerScreen> {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 8),
                   Text(
-                    "L'IA extrait automatiquement la dénomination, le dosage et la posologie.",
+                    'L\'IA détectera automatiquement les molécules prescrites pour vérifier la disponibilité en pharmacie de garde.',
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 13,
                       color: palette.textSecondary,
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 16),
-                  if (_isProcessing)
+                  const SizedBox(height: 20),
+                  if (_selectedImage != null) ...[
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(14),
+                      child: Container(
+                        height: 200,
+                        width: double.infinity,
+                        decoration: BoxDecoration(color: palette.background),
+                        child: kIsWeb
+                            ? Image.network(
+                                _selectedImage!.path,
+                                fit: BoxFit.cover,
+                              )
+                            : Image.file(
+                                File(_selectedImage!.path),
+                                fit: BoxFit.cover,
+                              ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  if (_isProcessing) ...[
                     const Padding(
-                      padding: EdgeInsets.all(12),
+                      padding: EdgeInsets.symmetric(vertical: 24),
                       child: Column(
                         children: [
                           CircularProgressIndicator(
                             color: AppColors.tealPrimary,
                           ),
-                          SizedBox(height: 10),
+                          SizedBox(height: 12),
                           Text(
-                            "Analyse de l'ordonnance par l'IA...",
+                            'Analyse OCR et reconnaissance des médicaments...',
                             style: TextStyle(
                               fontSize: 13,
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.w500,
                               color: AppColors.tealPrimary,
                             ),
                           ),
                         ],
                       ),
-                    )
-                  else
+                    ),
+                  ] else ...[
                     Row(
                       children: [
                         Expanded(
                           child: ElevatedButton.icon(
                             onPressed: () => _pickImage(ImageSource.camera),
                             icon: const Icon(
-                              Icons.camera_alt_outlined,
+                              Icons.camera_alt_rounded,
                               size: 18,
                             ),
-                            label: const Text('Prendre photo'),
+                            label: const Text('Appareil Photo'),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.softBlue,
-                              foregroundColor: AppColors.tealPrimary,
-                              elevation: 0,
+                              backgroundColor: AppColors.tealPrimary,
+                              foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: () => _pickImage(ImageSource.gallery),
-                            icon: const Icon(
-                              Icons.photo_library_outlined,
-                              size: 18,
-                            ),
-                            label: const Text('Galerie'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.softBlue,
-                              foregroundColor: AppColors.tealPrimary,
-                              elevation: 0,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            if (_isScanned) ...[
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: palette.surface,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: palette.border),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: SizedBox(
-                            width: 65,
-                            height: 65,
-                            child: _selectedImage != null && !kIsWeb
-                                ? Image.file(
-                                    File(_selectedImage!.path),
-                                    fit: BoxFit.cover,
-                                  )
-                                : Container(
-                                    color: Colors.grey.shade200,
-                                    child: const Icon(
-                                      Icons.receipt_long_rounded,
-                                      color: AppColors.tealPrimary,
-                                      size: 32,
-                                    ),
-                                  ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.tealLight,
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: const Text(
-                                  'Reconnaissance IA terminée',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.tealPrimary,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              const Text(
-                                "MÉDICAMENT DÉTECTÉ PAR L'IA",
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.primaryRed,
-                                  letterSpacing: 0.3,
-                                ),
-                              ),
-                              Text(
-                                'Indice de confiance : $_confidence%',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: palette.textSecondary,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Libellé pharmaceutique vérifiable',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: palette.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.softBlue.withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: TextField(
-                        controller: _medicineController,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
-                        ),
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          isDense: true,
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      "ℹ️ L'IA assiste la saisie. Vérifiez le nom avant la recherche.",
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: palette.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: AppColors.softBlue.withValues(alpha: 0.4),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Dosage',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: AppColors.textSecondary,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  _dosage,
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.textPrimary,
-                                  ),
-                                ),
-                              ],
                             ),
                           ),
                         ),
                         const SizedBox(width: 10),
                         Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: AppColors.softBlue.withValues(alpha: 0.4),
-                              borderRadius: BorderRadius.circular(12),
+                          child: OutlinedButton.icon(
+                            onPressed: () => _pickImage(ImageSource.gallery),
+                            icon: const Icon(
+                              Icons.photo_library_rounded,
+                              size: 18,
                             ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Conditionnement',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: AppColors.textSecondary,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  _packaging,
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.textPrimary,
-                                  ),
-                                ),
-                              ],
+                            label: const Text('Galerie'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: palette.textPrimary,
+                              side: BorderSide(color: palette.border),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            if (_isScanned) ...[
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: palette.surface,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(
+                    color: AppColors.tealPrimary.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.check_circle_rounded,
+                          color: AppColors.tealPrimary,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Médicament détecté',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: palette.textPrimary,
+                          ),
+                        ),
+                        const Spacer(),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.tealLight,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            '$_confidence% certitude',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.tealPrimary,
                             ),
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 12),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 12,
+                    TextField(
+                      controller: _medicineController,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: palette.textPrimary,
                       ),
-                      decoration: BoxDecoration(
-                        color: AppColors.softBlue.withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(12),
+                      decoration: InputDecoration(
+                        labelText: 'Nom du médicament',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
                       ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Officines de garde identifiées',
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Forme : $_dosage\nConditionnement : $_packaging',
                             style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
+                              fontSize: 12,
+                              color: palette.textSecondary,
                             ),
                           ),
-                          Text(
-                            '4 à proximité',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.tealPrimary,
-                            ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(
+                            context,
+                            _medicineController.text.trim(),
+                          );
+                        },
+                        icon: const Icon(Icons.search_rounded, size: 18),
+                        label: const Text('Rechercher dans les pharmacies'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.tealPrimary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                        ],
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
             ],
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context, _medicineController.text.trim());
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryRed,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                elevation: 0,
-              ),
-              child: const Text(
-                'Rechercher dans les pharmacies de garde',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Trouver les officines de garde à contacter',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12, color: palette.textSecondary),
-            ),
           ],
         ),
       ),
