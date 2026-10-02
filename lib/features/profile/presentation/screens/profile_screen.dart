@@ -203,7 +203,17 @@ class _ProfileBody extends ConsumerWidget {
                     activeThumbColor: AppColors.success,
                     onChanged: (value) => ref
                         .read(donorAvailabilityControllerProvider)
-                        .setAvailable(value),
+                        .setAvailable(value)
+                        .catchError((_) {
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                "Impossible de mettre à jour : vérifiez votre connexion.",
+                              ),
+                            ),
+                          );
+                        }),
                   ),
                 ],
               ),
@@ -306,16 +316,22 @@ class _ProfileBody extends ConsumerWidget {
           child: Column(
             children: [
               _ProfileListTile(
+                icon: Icons.menu_book_outlined,
+                label: 'Guide du donneur',
+                onTap: () => context.push(AppRoutes.donorGuide),
+              ),
+              Divider(height: 1, color: palette.border),
+              _ProfileListTile(
                 icon: Icons.calendar_today_outlined,
                 label: 'Mes alertes et engagements',
                 trailing: alertsCount > 0 ? '$alertsCount en cours' : null,
-                onTap: () => onComingSoon('Mes alertes et engagements'),
+                onTap: () => context.push(AppRoutes.myAlerts),
               ),
               Divider(height: 1, color: palette.border),
               _ProfileListTile(
                 icon: Icons.notifications_none,
                 label: 'Notifications et urgences',
-                onTap: () => onComingSoon('Notifications et urgences'),
+                onTap: () => context.go(AppRoutes.emergencies),
               ),
               Divider(height: 1, color: palette.border),
               _ProfileListTile(
