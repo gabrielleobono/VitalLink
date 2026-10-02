@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/services/location_service.dart';
@@ -42,7 +42,9 @@ class BloodAlertCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final palette = context.palette;
-    final badgeColor = _isVerified ? AppColors.tealPrimary : const Color(0xFF2563EB);
+    final badgeColor = _isVerified
+        ? AppColors.tealPrimary
+        : const Color(0xFF2563EB);
     final badgeBg = _isVerified ? AppColors.tealLight : const Color(0xFFEFF6FF);
 
     // Calcul dynamique de la distance si l'hôpital et la position sont connus
@@ -103,7 +105,9 @@ class BloodAlertCard extends ConsumerWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        _isVerified ? Icons.verified_user_rounded : Icons.campaign_rounded,
+                        _isVerified
+                            ? Icons.verified_user_rounded
+                            : Icons.campaign_rounded,
                         size: 13,
                         color: badgeColor,
                       ),
@@ -148,7 +152,10 @@ class BloodAlertCard extends ConsumerWidget {
                 Container(
                   width: 56,
                   height: 56,
-                  padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 4,
+                    horizontal: 2,
+                  ),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: gradientColors,
@@ -178,7 +185,10 @@ class BloodAlertCard extends ConsumerWidget {
                       ),
                       const SizedBox(height: 2),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 4,
+                          vertical: 1,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.22),
                           borderRadius: BorderRadius.circular(4),
@@ -255,10 +265,7 @@ class BloodAlertCard extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 14),
-            Container(
-              height: 1,
-              color: palette.border.withValues(alpha: 0.6),
-            ),
+            Container(height: 1, color: palette.border.withValues(alpha: 0.6)),
             const SizedBox(height: 10),
             Row(
               children: [

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -49,7 +49,7 @@ class MyAlertsScreen extends ConsumerWidget {
                 'Chargement...',
                 style: TextStyle(fontSize: 12, color: palette.textSecondary),
               ),
-              error: (_, __) => const SizedBox.shrink(),
+              error: (err, stack) => const SizedBox.shrink(),
             ),
           ],
         ),

@@ -1,4 +1,4 @@
-﻿import 'dart:io';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -149,9 +149,7 @@ class _PrescriptionScannerScreenState extends State<PrescriptionScannerScreen> {
                       child: Container(
                         height: 200,
                         width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: palette.background,
-                        ),
+                        decoration: BoxDecoration(color: palette.background),
                         child: kIsWeb
                             ? Image.network(
                                 _selectedImage!.path,
@@ -170,7 +168,9 @@ class _PrescriptionScannerScreenState extends State<PrescriptionScannerScreen> {
                       padding: EdgeInsets.symmetric(vertical: 24),
                       child: Column(
                         children: [
-                          CircularProgressIndicator(color: AppColors.tealPrimary),
+                          CircularProgressIndicator(
+                            color: AppColors.tealPrimary,
+                          ),
                           SizedBox(height: 12),
                           Text(
                             'Analyse OCR et reconnaissance des médicaments...',
@@ -189,7 +189,10 @@ class _PrescriptionScannerScreenState extends State<PrescriptionScannerScreen> {
                         Expanded(
                           child: ElevatedButton.icon(
                             onPressed: () => _pickImage(ImageSource.camera),
-                            icon: const Icon(Icons.camera_alt_rounded, size: 18),
+                            icon: const Icon(
+                              Icons.camera_alt_rounded,
+                              size: 18,
+                            ),
                             label: const Text('Appareil Photo'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.tealPrimary,
@@ -205,7 +208,10 @@ class _PrescriptionScannerScreenState extends State<PrescriptionScannerScreen> {
                         Expanded(
                           child: OutlinedButton.icon(
                             onPressed: () => _pickImage(ImageSource.gallery),
-                            icon: const Icon(Icons.photo_library_rounded, size: 18),
+                            icon: const Icon(
+                              Icons.photo_library_rounded,
+                              size: 18,
+                            ),
                             label: const Text('Galerie'),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: palette.textPrimary,
@@ -230,14 +236,20 @@ class _PrescriptionScannerScreenState extends State<PrescriptionScannerScreen> {
                 decoration: BoxDecoration(
                   color: palette.surface,
                   borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: AppColors.tealPrimary.withValues(alpha: 0.3)),
+                  border: Border.all(
+                    color: AppColors.tealPrimary.withValues(alpha: 0.3),
+                  ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.check_circle_rounded, color: AppColors.tealPrimary, size: 20),
+                        const Icon(
+                          Icons.check_circle_rounded,
+                          color: AppColors.tealPrimary,
+                          size: 20,
+                        ),
                         const SizedBox(width: 8),
                         Text(
                           'Médicament détecté',
@@ -249,7 +261,10 @@ class _PrescriptionScannerScreenState extends State<PrescriptionScannerScreen> {
                         ),
                         const Spacer(),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.tealLight,
                             borderRadius: BorderRadius.circular(8),
@@ -275,8 +290,13 @@ class _PrescriptionScannerScreenState extends State<PrescriptionScannerScreen> {
                       ),
                       decoration: InputDecoration(
                         labelText: 'Nom du médicament',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -285,7 +305,10 @@ class _PrescriptionScannerScreenState extends State<PrescriptionScannerScreen> {
                         Expanded(
                           child: Text(
                             'Forme : $_dosage\nConditionnement : $_packaging',
-                            style: TextStyle(fontSize: 12, color: palette.textSecondary),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: palette.textSecondary,
+                            ),
                           ),
                         ),
                       ],
@@ -295,7 +318,10 @@ class _PrescriptionScannerScreenState extends State<PrescriptionScannerScreen> {
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         onPressed: () {
-                          Navigator.pop(context, _medicineController.text.trim());
+                          Navigator.pop(
+                            context,
+                            _medicineController.text.trim(),
+                          );
                         },
                         icon: const Icon(Icons.search_rounded, size: 18),
                         label: const Text('Rechercher dans les pharmacies'),

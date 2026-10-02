@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_palette.dart';
@@ -126,7 +126,11 @@ class PharmacyCard extends StatelessWidget {
           const SizedBox(height: 6),
           Row(
             children: [
-              Icon(Icons.location_on_outlined, size: 14, color: palette.textSecondary),
+              Icon(
+                Icons.location_on_outlined,
+                size: 14,
+                color: palette.textSecondary,
+              ),
               const SizedBox(width: 4),
               Expanded(
                 child: Text(
@@ -233,7 +237,11 @@ class PharmacyCard extends StatelessWidget {
                   height: 42,
                   child: OutlinedButton.icon(
                     onPressed: _openMap,
-                    icon: const Icon(Icons.directions_rounded, size: 17, color: AppColors.tealPrimary),
+                    icon: const Icon(
+                      Icons.directions_rounded,
+                      size: 17,
+                      color: AppColors.tealPrimary,
+                    ),
                     label: const Text(
                       'Itinéraire Maps',
                       style: TextStyle(
@@ -244,7 +252,9 @@ class PharmacyCard extends StatelessWidget {
                     ),
                     style: OutlinedButton.styleFrom(
                       backgroundColor: AppColors.softBlue,
-                      side: BorderSide(color: AppColors.tealPrimary.withValues(alpha: 0.2)),
+                      side: BorderSide(
+                        color: AppColors.tealPrimary.withValues(alpha: 0.2),
+                      ),
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),

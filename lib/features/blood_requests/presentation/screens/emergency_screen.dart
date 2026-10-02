@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -83,7 +83,7 @@ class EmergencyScreen extends ConsumerWidget {
                       color: palette.textSecondary,
                     ),
                   ),
-                  error: (_, __) => Text(
+                  error: (err, stack) => Text(
                     'Mode hors-ligne',
                     style: TextStyle(
                       fontSize: 12,

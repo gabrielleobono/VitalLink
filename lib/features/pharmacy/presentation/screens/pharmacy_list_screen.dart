@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_palette.dart';
@@ -102,14 +102,9 @@ class _PharmacyListScreenState extends ConsumerState<PharmacyListScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: TextField(
               controller: _searchController,
-              style: TextStyle(
-                color: palette.textPrimary,
-                fontSize: 14,
-              ),
+              style: TextStyle(color: palette.textPrimary, fontSize: 14),
               onChanged: (val) {
-                ref
-                    .read(pharmacySearchQueryProvider.notifier)
-                    .setQuery(val);
+                ref.read(pharmacySearchQueryProvider.notifier).setQuery(val);
               },
               decoration: InputDecoration(
                 filled: true,

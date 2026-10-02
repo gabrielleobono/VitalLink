@@ -1,4 +1,4 @@
-﻿import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../data/models/pharmacy.dart';
 import '../../data/repositories/pharmacy_repository.dart';

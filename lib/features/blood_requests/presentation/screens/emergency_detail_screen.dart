@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -10,7 +10,7 @@ import '../../../home/presentation/providers/blood_alert_provider.dart';
 import '../providers/hospital_provider.dart';
 import '../widgets/confirm_donation_sheet.dart';
 
-/// Écran "Détails de l'urgence" — ouvert depuis une carte d'alerte.
+/// �cran "D�tails de l'urgence" � ouvert depuis une carte d'alerte.
 class EmergencyDetailScreen extends ConsumerWidget {
   const EmergencyDetailScreen({super.key, required this.alertId});
 
@@ -21,18 +21,20 @@ class EmergencyDetailScreen extends ConsumerWidget {
         ? alert.id.substring(0, 6).toUpperCase()
         : alert.id.toUpperCase();
 
-    final text = '🚨 URGENCE SANG - VitalLink 🚨\n\n'
+    final text =
+        '?? URGENCE SANG - VitalLink ??\n\n'
         'Besoin urgent de ${alert.units} poche(s) de sang groupe [${alert.recipientBloodGroup}] !\n'
-        '🏥 Établissement : ${alert.hospitalName}\n'
-        '📍 Quartier / Ville : ${alert.district}\n'
-        'ℹ️ Service : ${alert.serviceInfo}\n'
-        '🆔 Code Alerte : #$shortCode\n\n'
-        'Si vous êtes du groupe ${alert.recipientBloodGroup} ou compatible, votre don peut sauver une vie dès maintenant !\n'
-        '📲 Ouvrez l\'application VitalLink pour vous engager ou rendez-vous directement à l\'accueil des urgences.';
+        '?? �tablissement : ${alert.hospitalName}\n'
+        '?? Quartier / Ville : ${alert.district}\n'
+        '?? Service : ${alert.serviceInfo}\n'
+        '?? Code Alerte : #$shortCode\n\n'
+        'Si vous �tes du groupe ${alert.recipientBloodGroup} ou compatible, votre don peut sauver une vie d�s maintenant !\n'
+        '?? Ouvrez l\'application VitalLink pour vous engager ou rendez-vous directement � l\'accueil des urgences.';
 
     Share.share(
       text,
-      subject: 'Urgence Sang ${alert.recipientBloodGroup} - ${alert.hospitalName}',
+      subject:
+          'Urgence Sang ${alert.recipientBloodGroup} - ${alert.hospitalName}',
     );
   }
 
@@ -48,7 +50,7 @@ class EmergencyDetailScreen extends ConsumerWidget {
         elevation: 0,
         scrolledUnderElevation: 0,
         title: Text(
-          "Détails de l'urgence",
+          "D�tails de l'urgence",
           style: TextStyle(
             color: palette.textPrimary,
             fontWeight: FontWeight.w700,
@@ -65,7 +67,7 @@ class EmergencyDetailScreen extends ConsumerWidget {
                   )
                 : const SizedBox.shrink(),
             loading: () => const SizedBox.shrink(),
-            error: (_, __) => const SizedBox.shrink(),
+            error: (err, stack) => const SizedBox.shrink(),
           ),
         ],
       ),
@@ -84,7 +86,7 @@ class EmergencyDetailScreen extends ConsumerWidget {
         loading: () => const Center(
           child: CircularProgressIndicator(color: AppColors.primaryRed),
         ),
-        error: (error, _) => Center(
+        error: (error, stack) => Center(
           child: Text(
             'Impossible de charger l\'alerte.',
             style: TextStyle(color: palette.textSecondary),
@@ -101,10 +103,10 @@ class _EmergencyDetailBody extends ConsumerWidget {
   final BloodAlert alert;
 
   static const _requirements = [
-    'Âge : 18 - 60 ans',
+    '�ge : 18 - 60 ans',
     'Poids : minimum 50 kg',
-    'Être en bonne santé',
-    'Ne pas être à jeun',
+    '�tre en bonne sant�',
+    'Ne pas �tre � jeun',
     'Bien s\'hydrater',
   ];
 
@@ -174,7 +176,7 @@ class _EmergencyDetailBody extends ConsumerWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                'Alerte #${shortCode}',
+                'Alerte #$shortCode',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -211,7 +213,7 @@ class _EmergencyDetailBody extends ConsumerWidget {
                 ),
                 if (hospital != null)
                   Text(
-                    '${hospital.address} • ${hospital.city}',
+                    '${hospital.address} � ${hospital.city}',
                     style: TextStyle(
                       fontSize: 12,
                       color: palette.textSecondary,
@@ -226,7 +228,7 @@ class _EmergencyDetailBody extends ConsumerWidget {
                             ? null
                             : () => LauncherService.callPhone(hospital.phone),
                         icon: const Icon(Icons.call_rounded, size: 16),
-                        label: const Text("Appeler l'hôpital"),
+                        label: const Text("Appeler l'h�pital"),
                         style: OutlinedButton.styleFrom(
                           backgroundColor: AppColors.darkSlate,
                           foregroundColor: Colors.white,
@@ -248,7 +250,7 @@ class _EmergencyDetailBody extends ConsumerWidget {
                                 longitude: hospital.location.longitude,
                               ),
                         icon: const Icon(Icons.directions_rounded, size: 16),
-                        label: const Text('Itinéraire Maps'),
+                        label: const Text('Itin�raire Maps'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: palette.textPrimary,
                           side: BorderSide(color: palette.border),
@@ -268,7 +270,7 @@ class _EmergencyDetailBody extends ConsumerWidget {
             padding: EdgeInsets.all(16),
             child: Center(child: CircularProgressIndicator()),
           ),
-          error: (_, _) => const SizedBox.shrink(),
+          error: (err, stack) => const SizedBox.shrink(),
         ),
         const SizedBox(height: 12),
         Container(
@@ -282,7 +284,7 @@ class _EmergencyDetailBody extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '${alert.units} poche${alert.units > 1 ? 's' : ''} nécessaire${alert.units > 1 ? 's' : ''}',
+                '${alert.units} poche${alert.units > 1 ? 's' : ''} n�cessaire${alert.units > 1 ? 's' : ''}',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
@@ -300,7 +302,7 @@ class _EmergencyDetailBody extends ConsumerWidget {
                   TextSpan(
                     style: TextStyle(fontSize: 12, color: palette.textPrimary),
                     children: [
-                      const TextSpan(text: 'Présentez-vous directement à la '),
+                      const TextSpan(text: 'Pr�sentez-vous directement � la '),
                       TextSpan(
                         text: alert.hospitalName,
                         style: const TextStyle(fontWeight: FontWeight.w700),
@@ -382,7 +384,7 @@ class _EmergencyDetailBody extends ConsumerWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          "Votre engagement informe immédiatement l'équipe médicale de garde.",
+          "Votre engagement informe imm�diatement l'�quipe m�dicale de garde.",
           textAlign: TextAlign.center,
           style: TextStyle(fontSize: 11, color: palette.textSecondary),
         ),

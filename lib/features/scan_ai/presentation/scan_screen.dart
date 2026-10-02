@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -52,7 +52,6 @@ class ScanScreen extends ConsumerWidget {
             ),
           ],
         ),
-
       ),
       body: SafeArea(
         child: Column(
@@ -530,4 +529,3 @@ class ScanScreen extends ConsumerWidget {
     );
   }
 }
-
