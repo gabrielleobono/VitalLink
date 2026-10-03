@@ -11,10 +11,6 @@ final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
   return ProfileRepositoryImpl(ref.watch(firestoreProvider));
 });
 
-/// Flux du profil `users/{uid}` — le document est créé par l'écran
-/// "Compléter mon profil" avant même que l'app n'atteigne l'Accueil ou le
-/// Profil (cf. le `redirect` de `appRouter`), donc il existe toujours ici en
-/// usage normal.
 final userProfileProvider = StreamProvider<UserProfile?>((ref) async* {
   final uid = await ref.watch(currentUserIdProvider.future);
   yield* ref.watch(profileRepositoryProvider).watchUser(uid);

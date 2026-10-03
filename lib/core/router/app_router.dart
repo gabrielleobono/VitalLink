@@ -8,9 +8,11 @@ import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/blood_requests/presentation/screens/create_alert_screen.dart';
 import '../../features/blood_requests/presentation/screens/emergency_detail_screen.dart';
 import '../../features/blood_requests/presentation/screens/emergency_screen.dart';
+import '../../features/donor_guide/presentation/screens/donor_guide_screen.dart';
 import '../../features/home/presentation/screens/dashboard_screen.dart';
 import '../../features/home/presentation/widgets/home_shell.dart';
 import '../../features/pharmacy/presentation/screens/pharmacy_list_screen.dart';
+import '../../features/profile/presentation/screens/my_alerts_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/scan_ai/presentation/scan_screen.dart';
 
@@ -24,6 +26,8 @@ abstract final class AppRoutes {
   static const pharmacies = '/pharmacies';
   static const profile = '/profile';
   static const scan = '/scan';
+  static const donorGuide = '/donor-guide';
+  static const myAlerts = '/profile/my-alerts';
 
   static const createEmergency = '/emergencies/new';
   static String emergencyDetail(String alertId) => '/emergencies/$alertId';
@@ -100,6 +104,14 @@ final appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.createEmergency,
       builder: (context, state) => const CreateAlertScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.donorGuide,
+      builder: (context, state) => const DonorGuideScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.myAlerts,
+      builder: (context, state) => const MyAlertsScreen(),
     ),
     GoRoute(
       path: '/emergencies/:alertId',
