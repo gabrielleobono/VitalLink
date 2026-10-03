@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/widgets/vital_link_logo.dart';
 
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -8,8 +9,7 @@ import '../../../../core/theme/app_palette.dart';
 import '../../../home/presentation/providers/blood_alert_provider.dart';
 import '../../../home/presentation/widgets/blood_alert_card.dart';
 
-/// Écran "Urgences" : liste des alertes de sang ouvertes et accès à la
-/// publication d'une nouvelle alerte citoyenne ou médicale.
+/// Écran "Urgences" : liste des alertes de sang ouvertes avec le logo officiel VitalLink
 class EmergencyScreen extends ConsumerWidget {
   const EmergencyScreen({super.key});
 
@@ -27,19 +27,7 @@ class EmergencyScreen extends ConsumerWidget {
         automaticallyImplyLeading: false,
         title: Row(
           children: [
-            Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                color: AppColors.primaryRed.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(
-                Icons.bloodtype_rounded,
-                color: AppColors.primaryRed,
-                size: 22,
-              ),
-            ),
+            const VitalLinkLogo(size: 38),
             const SizedBox(width: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -96,6 +84,7 @@ class EmergencyScreen extends ConsumerWidget {
           ],
         ),
       ),
+
       body: alertsAsync.when(
         data: (alerts) {
           if (alerts.isEmpty) {

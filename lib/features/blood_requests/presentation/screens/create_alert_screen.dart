@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/blood_compatibility.dart';
 import '../../data/models/hospital.dart';
@@ -16,15 +15,6 @@ final _hospitalsListProvider = FutureProvider<List<Hospital>>((ref) async {
       .toList();
 });
 
-const _criticalities = [
-  ('critical', 'Critique'),
-  ('high', 'Élevée'),
-  ('medium', 'Moyenne'),
-];
-
-/// Formulaire de publication d'une alerte de sang (`bloodAlerts/{id}`).
-/// Réservé aux soignants vérifiés (voir firestore.rules). Aucune donnée
-/// nominative du patient n'est saisie ni stockée.
 class CreateAlertScreen extends ConsumerStatefulWidget {
   const CreateAlertScreen({super.key});
 
@@ -35,16 +25,21 @@ class CreateAlertScreen extends ConsumerStatefulWidget {
 class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
   BloodGroup? _bloodGroup;
   Hospital? _hospital;
-  String _criticality = 'high';
   int _unitsNeeded = 1;
-  final _departmentController = TextEditingController();
 
+  final _departmentController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _caregiverCodeController = TextEditingController();
+
+  bool _isCaregiver = false;
   bool _isSubmitting = false;
   String? _errorMessage;
 
   @override
   void dispose() {
     _departmentController.dispose();
+    _phoneController.dispose();
+    _caregiverCodeController.dispose();
     super.dispose();
   }
 
@@ -72,13 +67,20 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
         bloodGroup,
       ).map((g) => g.label).toList();
 
+      final isVerifiedCaregiver =
+          _isCaregiver && _caregiverCodeController.text.trim().isNotEmpty;
+
+      final contactPhone = _phoneController.text.trim().isNotEmpty
+          ? _phoneController.text.trim()
+          : hospital.phone;
+
       final doc = await FirebaseFirestore.instance
           .collection('bloodAlerts')
           .add({
             'recipientBloodGroup': bloodGroup.label,
             'compatibleGroups': compatible,
             'units': _unitsNeeded,
-            'criticality': _criticality,
+            'criticality': 'high',
             'hospitalId': hospital.id,
             'location': hospital.location,
             'createdBy': user.uid,
@@ -88,12 +90,17 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
               DateTime.now().add(const Duration(hours: 24)),
             ),
             'hospitalName': hospital.name,
-            'serviceInfo': _departmentController.text.trim(),
+            'serviceInfo': _departmentController.text.trim().isNotEmpty
+                ? _departmentController.text.trim()
+                : 'Urgences',
+            'contactPhone': contactPhone,
             'district': hospital.city,
             'distanceKm': 0,
-            'alertBadgeLabel': 'Alerte citoyenne',
-            'alertBadgeVariant': 'citizen',
-            'source': 'citizen',
+            'alertBadgeLabel': isVerifiedCaregiver
+                ? 'Alerte médicale vérifiée'
+                : 'Alerte citoyenne',
+            'alertBadgeVariant': isVerifiedCaregiver ? 'medical' : 'citizen',
+            'source': isVerifiedCaregiver ? 'medical' : 'citizen',
             'bloodGroupTagLabel': bloodGroup.label,
             'ctaSubtitleText': '$_unitsNeeded poche(s) · ${hospital.name}',
           });
@@ -123,148 +130,505 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
     final hospitalsAsync = ref.watch(_hospitalsListProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Nouvelle alerte')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          const Text(
-            'Groupe sanguin recherché',
-            style: TextStyle(fontWeight: FontWeight.w600),
+      backgroundColor: const Color(0xFF0F172A),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF0F172A),
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: const Text(
+          'Lancer Une Urgence Sang',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
           ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: [
-              for (final group in BloodGroup.values)
-                ChoiceChip(
-                  label: Text(group.label),
-                  selected: _bloodGroup == group,
-                  onSelected: _isSubmitting
-                      ? null
-                      : (selected) => setState(
-                          () => _bloodGroup = selected ? group : null,
+        ),
+        centerTitle: false,
+      ),
+      bottomNavigationBar: Container(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E293B),
+          border: Border(
+            top: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                onPressed: _canSubmit ? _submit : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  disabledBackgroundColor: AppColors.primary.withValues(
+                    alpha: 0.35,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 0,
+                ),
+                child: _isSubmitting
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white,
+                          ),
                         ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          const Text('Hôpital', style: TextStyle(fontWeight: FontWeight.w600)),
-          const SizedBox(height: 10),
-          hospitalsAsync.when(
-            data: (hospitals) {
-              if (hospitals.isEmpty) {
-                return const Text(
-                  "Aucun hôpital enregistré pour l'instant.",
-                  style: TextStyle(color: AppColors.textSecondary),
-                );
-              }
-              return DropdownButtonFormField<Hospital>(
-                initialValue: _hospital,
-                isExpanded: true,
-                decoration: const InputDecoration(border: OutlineInputBorder()),
-                hint: const Text('Choisir un hôpital'),
-                items: [
-                  for (final hospital in hospitals)
-                    DropdownMenuItem(
-                      value: hospital,
-                      child: Text('${hospital.name} · ${hospital.city}'),
-                    ),
-                ],
-                onChanged: _isSubmitting
-                    ? null
-                    : (value) => setState(() => _hospital = value),
-              );
-            },
-            loading: () => const LinearProgressIndicator(),
-            error: (error, stackTrace) => const Text(
-              'Impossible de charger la liste des hôpitaux.',
-              style: TextStyle(color: AppColors.textSecondary),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(Icons.play_arrow, color: Colors.white, size: 20),
+                          SizedBox(width: 8),
+                          Text(
+                            "DIFFUSER L'ALERTE D'URGENCE",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _departmentController,
-            enabled: !_isSubmitting,
-            decoration: const InputDecoration(
-              labelText: 'Service (optionnel)',
-              hintText: 'Ex. Urgences, Maternité',
-              border: OutlineInputBorder(),
+            const SizedBox(height: 8),
+            Text(
+              'Notification prioritaire envoyée aux donneurs compatibles à proximité.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.5),
+                fontSize: 11,
+              ),
             ),
-          ),
-          const SizedBox(height: 24),
-          const Text('Urgence', style: TextStyle(fontWeight: FontWeight.w600)),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 8,
+          ],
+        ),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        children: [
+          Row(
             children: [
-              for (final (value, label) in _criticalities)
-                ChoiceChip(
-                  label: Text(label),
-                  selected: _criticality == value,
-                  onSelected: _isSubmitting
-                      ? null
-                      : (selected) {
-                          if (selected) setState(() => _criticality = value);
-                        },
+              Container(
+                width: 24,
+                height: 24,
+                decoration: const BoxDecoration(
+                  color: AppColors.primary,
+                  shape: BoxShape.circle,
                 ),
+                child: const Icon(
+                  Icons.water_drop,
+                  color: Colors.white,
+                  size: 14,
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'Groupe sanguin requis',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
+          const SizedBox(height: 4),
+          Text(
+            'Sélectionnez le groupe ciblé',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.6),
+              fontSize: 13,
+            ),
+          ),
+          const SizedBox(height: 14),
+
+          _buildBloodGroupGrid(),
+
           const SizedBox(height: 24),
+
           const Text(
-            'Poches nécessaires',
-            style: TextStyle(fontWeight: FontWeight.w600),
+            'Nombre de poches',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 10),
           Row(
             children: [
-              IconButton.outlined(
-                onPressed: _isSubmitting || _unitsNeeded <= 1
+              _buildStepButton(
+                icon: Icons.remove,
+                onTap: _isSubmitting || _unitsNeeded <= 1
                     ? null
                     : () => setState(() => _unitsNeeded--),
-                icon: const Icon(Icons.remove),
               ),
-              SizedBox(
-                width: 48,
+              Container(
+                width: 60,
+                alignment: Alignment.center,
                 child: Text(
                   '$_unitsNeeded',
-                  textAlign: TextAlign.center,
                   style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 16,
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
-              IconButton.outlined(
-                onPressed: _isSubmitting
+              _buildStepButton(
+                icon: Icons.add,
+                onTap: _isSubmitting
                     ? null
                     : () => setState(() => _unitsNeeded++),
-                icon: const Icon(Icons.add),
+              ),
+              const SizedBox(width: 16),
+              Text(
+                'Poches calibrées de 450ml',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.5),
+                  fontSize: 13,
+                ),
               ),
             ],
           ),
-          if (_errorMessage != null) ...[
-            const SizedBox(height: 12),
-            Text(
-              _errorMessage!,
-              style: const TextStyle(color: AppColors.primary, fontSize: 13),
-            ),
-          ],
-          const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _canSubmit ? _submit : null,
-              child: _isSubmitting
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Text('Publier l’alerte'),
+
+          const SizedBox(height: 28),
+
+          Row(
+            children: [
+              const Icon(
+                Icons.local_hospital,
+                color: AppColors.primary,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'Destination hospitalière',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Point de réception et transmission',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.6),
+              fontSize: 13,
             ),
           ),
+          const SizedBox(height: 14),
+
+          const Text(
+            'Hôpital / Clinique',
+            style: TextStyle(color: Colors.white70, fontSize: 13),
+          ),
+          const SizedBox(height: 6),
+          hospitalsAsync.when(
+            data: (hospitals) {
+              if (hospitals.isEmpty) {
+                return const Text(
+                  "Aucun hôpital enregistré.",
+                  style: TextStyle(color: Colors.white54),
+                );
+              }
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.12),
+                  ),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<Hospital>(
+                    value: _hospital,
+                    isExpanded: true,
+                    dropdownColor: const Color(0xFF1E293B),
+                    hint: const Text(
+                      'Sélectionner un établissement',
+                      style: TextStyle(color: Colors.white54, fontSize: 14),
+                    ),
+                    items: [
+                      for (final hospital in hospitals)
+                        DropdownMenuItem(
+                          value: hospital,
+                          child: Text(
+                            '${hospital.name} (${hospital.city})',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                    ],
+                    onChanged: _isSubmitting
+                        ? null
+                        : (value) {
+                            setState(() {
+                              _hospital = value;
+                              if (value != null &&
+                                  _phoneController.text.trim().isEmpty) {
+                                _phoneController.text = value.phone;
+                              }
+                            });
+                          },
+                  ),
+                ),
+              );
+            },
+            loading: () => const LinearProgressIndicator(),
+            error: (_, _) => const Text(
+              'Erreur de chargement des hôpitaux.',
+              style: TextStyle(color: Colors.white54),
+            ),
+          ),
+
+          const SizedBox(height: 14),
+
+          const Text(
+            'Service & Bâtiment',
+            style: TextStyle(color: Colors.white70, fontSize: 13),
+          ),
+          const SizedBox(height: 6),
+          _buildTextField(
+            controller: _departmentController,
+            hintText: 'Ex. Service Réanimation Pédiatrique - Bâtiment B',
+            icon: Icons.meeting_room_outlined,
+          ),
+
+          const SizedBox(height: 14),
+
+          const Text(
+            'Numéro direct de la permanence ou du médecin',
+            style: TextStyle(color: Colors.white70, fontSize: 13),
+          ),
+          const SizedBox(height: 6),
+          _buildTextField(
+            controller: _phoneController,
+            hintText: '+237 233 42 12 34',
+            keyboardType: TextInputType.phone,
+            icon: Icons.phone_outlined,
+          ),
+
+          const SizedBox(height: 24),
+
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E293B),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: const [
+                    Icon(
+                      Icons.shield_outlined,
+                      color: Colors.blueAccent,
+                      size: 20,
+                    ),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Alerte Citoyenne Immédiate',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Diffusion directe aux donneurs compatibles',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.6),
+                    fontSize: 12,
+                  ),
+                ),
+                const Divider(color: Colors.white12, height: 20),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Vous êtes soignant ? Ajouter un code de validation',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.85),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                    Switch(
+                      value: _isCaregiver,
+                      activeThumbColor: AppColors.primary,
+                      onChanged: (val) => setState(() => _isCaregiver = val),
+                    ),
+                  ],
+                ),
+                if (_isCaregiver) ...[
+                  const SizedBox(height: 8),
+                  _buildTextField(
+                    controller: _caregiverCodeController,
+                    hintText: 'Code professionnel de santé',
+                    icon: Icons.verified_user_outlined,
+                  ),
+                ],
+              ],
+            ),
+          ),
+
+          if (_errorMessage != null) ...[
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.3),
+                ),
+              ),
+              child: Text(
+                _errorMessage!,
+                style: const TextStyle(color: Colors.white, fontSize: 13),
+              ),
+            ),
+          ],
+
+          const SizedBox(height: 24),
         ],
+      ),
+    );
+  }
+
+  Widget _buildBloodGroupGrid() {
+    final groups = BloodGroup.values;
+
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: groups.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 4,
+        mainAxisSpacing: 10,
+        crossAxisSpacing: 10,
+        childAspectRatio: 1.5,
+      ),
+      itemBuilder: (context, index) {
+        final group = groups[index];
+        final isSelected = _bloodGroup == group;
+
+        return InkWell(
+          borderRadius: BorderRadius.circular(10),
+          onTap: _isSubmitting
+              ? null
+              : () => setState(() => _bloodGroup = isSelected ? null : group),
+          child: Container(
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: isSelected ? AppColors.primary : const Color(0xFF1E293B),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: isSelected
+                    ? AppColors.primary
+                    : Colors.white.withValues(alpha: 0.12),
+                width: isSelected ? 1.5 : 1,
+              ),
+            ),
+            child: Text(
+              group.label,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildStepButton({
+    required IconData icon,
+    required VoidCallback? onTap,
+  }) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(8),
+      onTap: onTap,
+      child: Container(
+        width: 38,
+        height: 38,
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E293B),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+        ),
+        child: Icon(
+          icon,
+          color: onTap != null ? Colors.white : Colors.white24,
+          size: 20,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String hintText,
+    IconData? icon,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return TextField(
+      controller: controller,
+      enabled: !_isSubmitting,
+      keyboardType: keyboardType,
+      style: const TextStyle(color: Colors.white, fontSize: 14),
+      decoration: InputDecoration(
+        hintText: hintText,
+        hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
+        prefixIcon: icon != null
+            ? Icon(icon, color: Colors.white54, size: 20)
+            : null,
+        filled: true,
+        fillColor: const Color(0xFF1E293B),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 12,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.12)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.12)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+        ),
       ),
     );
   }

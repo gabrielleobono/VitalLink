@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../../../core/services/location_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_palette.dart';
@@ -10,7 +9,6 @@ import '../../data/models/blood_alert.dart';
 
 class BloodAlertCard extends ConsumerWidget {
   const BloodAlertCard({super.key, required this.alert, required this.onTap});
-
   final BloodAlert alert;
   final VoidCallback onTap;
 
@@ -30,13 +28,18 @@ class BloodAlertCard extends ConsumerWidget {
     return cleaned.isNotEmpty ? cleaned.toUpperCase() : 'URGENT';
   }
 
-  /// Calcule la distance affichée (dynamique via GPS ou repli statique)
-  String _buildDistanceLabel(double? calculatedKm) {
+  String _buildDistanceLabel(double? calculatedKm, String? hospitalCity) {
     final km = calculatedKm ?? (alert.distanceKm > 0 ? alert.distanceKm : null);
+    final district = alert.district.isNotEmpty
+        ? alert.district
+        : (hospitalCity ?? '');
+
     if (km != null && km > 0) {
-      return 'À ${km.toStringAsFixed(1)} km • ${alert.district}';
+      return district.isNotEmpty
+          ? 'À ${km.toStringAsFixed(1)} km • $district'
+          : 'À ${km.toStringAsFixed(1)} km';
     }
-    return alert.district.isNotEmpty ? alert.district : 'À proximité';
+    return district.isNotEmpty ? 'À proximité • $district' : 'À proximité';
   }
 
   @override
@@ -47,14 +50,14 @@ class BloodAlertCard extends ConsumerWidget {
         : const Color(0xFF2563EB);
     final badgeBg = _isVerified ? AppColors.tealLight : const Color(0xFFEFF6FF);
 
-    // Calcul dynamique de la distance si l'hôpital et la position sont connus
+    // Résolution GPS et Hôpital
     final userPosAsync = ref.watch(userPositionProvider);
     final hospitalAsync = ref.watch(hospitalProvider(alert.hospitalId));
 
-    double? dynamicDistanceKm;
     final userPos = userPosAsync.asData?.value;
     final hospital = hospitalAsync.asData?.value;
 
+    double? dynamicDistanceKm;
     if (userPos != null && hospital != null) {
       dynamicDistanceKm = LocationService.distanceInKm(
         startLatitude: userPos.latitude,
@@ -63,6 +66,11 @@ class BloodAlertCard extends ConsumerWidget {
         endLongitude: hospital.location.longitude,
       );
     }
+
+    // Nom de l'hôpital : utilise le modèle chargé en priorité, puis le champ alert
+    final displayHospitalName = (hospital != null && hospital.name.isNotEmpty)
+        ? hospital.name
+        : (alert.hospitalName.isNotEmpty ? alert.hospitalName : 'Hôpital');
 
     final gradientColors = switch (alert.criticality) {
       'critical' => [const Color(0xFFDC2626), const Color(0xFF991B1B)],
@@ -148,7 +156,7 @@ class BloodAlertCard extends ConsumerWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Badge moderne du groupe sanguin avec dégradé
+                // Badge groupe sanguin
                 Container(
                   width: 56,
                   height: 56,
@@ -214,7 +222,7 @@ class BloodAlertCard extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        alert.hospitalName,
+                        displayHospitalName,
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w800,
@@ -247,7 +255,10 @@ class BloodAlertCard extends ConsumerWidget {
                           const SizedBox(width: 3),
                           Expanded(
                             child: Text(
-                              _buildDistanceLabel(dynamicDistanceKm),
+                              _buildDistanceLabel(
+                                dynamicDistanceKm,
+                                hospital?.city,
+                              ),
                               style: TextStyle(
                                 fontSize: 12,
                                 color: palette.textSecondary,
