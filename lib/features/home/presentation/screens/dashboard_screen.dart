@@ -5,55 +5,51 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_palette.dart';
-import '../../../../core/theme/theme_mode_provider.dart';
+import '../../../../core/widgets/vital_link_logo.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
 import '../providers/blood_alert_provider.dart';
 import '../widgets/blood_alert_card.dart';
 
-/// Écran "Accueil" : actions rapides + alertes de sang à proximité,
-
-class DashboardScreen extends ConsumerWidget {
+class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+  final PageController _carouselController = PageController();
+  int _currentCarouselIndex = 0;
+
+  @override
+  void dispose() {
+    _carouselController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final palette = context.palette;
     final alertsAsync = ref.watch(bloodAlertsProvider);
-    final themeMode = ref.watch(themeModeProvider);
-    final isDark =
-        themeMode == ThemeMode.dark ||
-        (themeMode == ThemeMode.system &&
-            MediaQuery.platformBrightnessOf(context) == Brightness.dark);
-
     final userProfileAsync = ref.watch(userProfileProvider);
     final profile = userProfileAsync.asData?.value;
+
     final locationLabel = profile != null && profile.city.isNotEmpty
         ? '${profile.city}, ${profile.country == "Cameroun" ? "CM" : profile.country}'
-        : 'Cameroun';
+        : 'Douala, CM';
 
     return Scaffold(
       backgroundColor: palette.background,
       body: SafeArea(
         child: Column(
           children: [
+            // 1. En-tête : Vrai logo VitalLink + Titre/Ville + Cloche notifications
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
               child: Row(
                 children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.water_drop,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
+                  const VitalLinkLogo(size: 42),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,23 +57,26 @@ class DashboardScreen extends ConsumerWidget {
                         Text(
                           'VitalLink',
                           style: TextStyle(
-                            fontSize: 17,
+                            fontSize: 18,
                             fontWeight: FontWeight.w800,
                             color: palette.textPrimary,
+                            letterSpacing: -0.3,
                           ),
                         ),
+                        const SizedBox(height: 2),
                         Row(
                           children: [
                             const Icon(
-                              Icons.circle,
-                              size: 6,
-                              color: AppColors.success,
+                              Icons.location_on,
+                              size: 13,
+                              color: AppColors.primary,
                             ),
-                            const SizedBox(width: 4),
+                            const SizedBox(width: 3),
                             Text(
                               locationLabel,
                               style: TextStyle(
-                                fontSize: 11,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
                                 color: palette.textSecondary,
                               ),
                             ),
@@ -86,102 +85,136 @@ class DashboardScreen extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: palette.background,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: palette.border),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.water_drop,
-                          size: 12,
-                          color: AppColors.primary,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          profile?.isDonor == true
-                              ? 'Donneur actif'
-                              : 'Citoyen',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: palette.textPrimary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 4),
                   IconButton(
-                    tooltip: isDark
-                        ? 'Passer en mode clair'
-                        : 'Passer en mode sombre',
                     icon: Icon(
-                      isDark
-                          ? Icons.light_mode_outlined
-                          : Icons.dark_mode_outlined,
-                      color: palette.textSecondary,
+                      Icons.notifications_none_rounded,
+                      color: palette.textPrimary,
+                      size: 26,
                     ),
-                    onPressed: () => ref
-                        .read(themeModeProvider.notifier)
-                        .setMode(isDark ? ThemeMode.light : ThemeMode.dark),
-                  ),
-                  InkWell(
-                    onTap: () => context.go(AppRoutes.profile),
-                    customBorder: const CircleBorder(),
-                    child: CircleAvatar(
-                      radius: 18,
-                      backgroundColor: AppColors.primary.withValues(
-                        alpha: 0.12,
-                      ),
-                      child: const Icon(
-                        Icons.person,
-                        color: AppColors.primary,
-                        size: 20,
-                      ),
-                    ),
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Aucune nouvelle notification'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
             ),
+
+            // 2. Contenu scrollable
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.only(bottom: 24),
                 children: [
+                  // Carrousel dynamique
+                  SizedBox(
+                    height: 140,
+                    child: PageView(
+                      controller: _carouselController,
+                      onPageChanged: (index) {
+                        setState(() => _currentCarouselIndex = index);
+                      },
+                      children: [
+                        _buildCarouselCard(
+                          title: 'Sauvez des vies aujourd’hui',
+                          subtitle:
+                              'Des banques de sang ont un besoin urgent de donneurs compatibles.',
+                          badgeText: 'Urgence Vitale',
+                          badgeColor: AppColors.primary,
+                          gradientColors: const [
+                            Color(0xFFB71C1C),
+                            Color(0xFFDC2626),
+                          ],
+                          icon: Icons.water_drop,
+                          onTap: () => context.go(AppRoutes.emergencies),
+                        ),
+                        _buildCarouselCard(
+                          title: 'Pharmacies de garde ouvertes',
+                          subtitle:
+                              'Consultez les officines ouvertes cette nuit dans votre secteur.',
+                          badgeText: 'Service 24/7',
+                          badgeColor: AppColors.tealPrimary,
+                          gradientColors: const [
+                            Color(0xFF0F766E),
+                            Color(0xFF14B8A6),
+                          ],
+                          icon: Icons.local_pharmacy_rounded,
+                          onTap: () => context.go(AppRoutes.pharmacies),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Indicateurs à points du carrousel
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(2, (index) {
+                      final isActive = _currentCarouselIndex == index;
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        margin: const EdgeInsets.symmetric(horizontal: 3),
+                        width: isActive ? 18 : 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: isActive ? AppColors.primary : palette.border,
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      );
+                    }),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // 3. Les 4 actions rapides compactes
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Row(
                       children: [
                         Expanded(
-                          child: _ActionCard(
+                          child: _QuickActionButton(
                             icon: Icons.water_drop,
-                            title: 'Urgence Sang',
-                            subtitle: 'Lancer ou aider',
-                            backgroundColor: AppColors.primary,
+                            label: 'Urgences',
+                            color: AppColors.primary,
                             onTap: () => context.go(AppRoutes.emergencies),
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 8),
                         Expanded(
-                          child: _ActionCard(
+                          child: _QuickActionButton(
                             icon: Icons.local_pharmacy_rounded,
-                            title: 'Pharmacies',
-                            subtitle: 'De garde ce soir',
-                            backgroundColor: AppColors.darkSlate,
+                            label: 'Pharmacies',
+                            color: AppColors.tealPrimary,
                             onTap: () => context.go(AppRoutes.pharmacies),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _QuickActionButton(
+                            icon: Icons.document_scanner_rounded,
+                            label: 'Scanner IA',
+                            color: AppColors.darkSlate,
+                            onTap: () => context.push(AppRoutes.scan),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _QuickActionButton(
+                            icon: Icons.add_alert_rounded,
+                            label: 'Alerter',
+                            color: AppColors.primaryDark,
+                            onTap: () =>
+                                context.push(AppRoutes.createEmergency),
                           ),
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 20),
+
+                  // 4. Section Alertes à proximité
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Row(
@@ -217,6 +250,7 @@ class DashboardScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 8),
+
                   alertsAsync.when(
                     data: (alerts) {
                       if (alerts.isEmpty) {
@@ -265,67 +299,143 @@ class DashboardScreen extends ConsumerWidget {
       ),
     );
   }
-}
 
-class _ActionCard extends StatelessWidget {
-  const _ActionCard({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.backgroundColor,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final Color backgroundColor;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildCarouselCard({
+    required String title,
+    required String subtitle,
+    required String badgeText,
+    required Color badgeColor,
+    required List<Color> gradientColors,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: backgroundColor,
+          gradient: LinearGradient(
+            colors: gradientColors,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
           borderRadius: BorderRadius.circular(18),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.18),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(icon, color: Colors.white, size: 18),
-                ),
-                const Spacer(),
-                const Icon(
-                  Icons.arrow_forward,
-                  color: Colors.white70,
-                  size: 16,
-                ),
-              ],
+          boxShadow: [
+            BoxShadow(
+              color: gradientColors.first.withValues(alpha: 0.25),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
-            const SizedBox(height: 18),
-            Text(
-              title,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
+          ],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      badgeText,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(color: Colors.white70, fontSize: 11),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 2),
+            const SizedBox(width: 10),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.18),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: Colors.white, size: 26),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _QuickActionButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _QuickActionButton({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: Colors.white, size: 18),
+            ),
+            const SizedBox(height: 6),
             Text(
-              subtitle,
-              style: const TextStyle(color: Colors.white70, fontSize: 11),
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: color,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
             ),
           ],
         ),

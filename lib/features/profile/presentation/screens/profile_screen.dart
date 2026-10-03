@@ -2,15 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/theme_mode_provider.dart';
+import '../../../../core/widgets/vital_link_logo.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../data/models/donor_profile.dart';
 import '../../domain/entities/user_profile.dart';
 import '../providers/profile_providers.dart';
 
-/// Écran "Mon Profil" : identité, bascule "Prêt à donner" et raccourcis,
+/// Écran "Mon Profil" : identité, bascule "Prêt à donner", raccourcis et thème,
 /// alimenté en temps réel par Firestore (`users/{uid}`, `donors/{uid}`).
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -82,25 +84,20 @@ class _ProfileBody extends ConsumerWidget {
     final isAvailable = donor?.available ?? false;
     final donationsCount = donor?.lastDonationAt != null ? 1 : 0;
 
+    final themeMode = ref.watch(themeModeProvider);
+    final isDark =
+        themeMode == ThemeMode.dark ||
+        (themeMode == ThemeMode.system &&
+            MediaQuery.platformBrightnessOf(context) == Brightness.dark);
+
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
       children: [
+        // En-tête avec le logo officiel VitalLink et le bouton de thème
         Row(
           children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(
-                Icons.water_drop,
-                color: Colors.white,
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 10),
+            const VitalLinkLogo(size: 38),
+            const SizedBox(width: 12),
             Text(
               'Mon Profil',
               style: TextStyle(
@@ -108,6 +105,19 @@ class _ProfileBody extends ConsumerWidget {
                 fontWeight: FontWeight.w800,
                 color: palette.textPrimary,
               ),
+            ),
+            const Spacer(),
+            IconButton(
+              tooltip: isDark
+                  ? 'Passer en mode clair'
+                  : 'Passer en mode sombre',
+              icon: Icon(
+                isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+                color: palette.textSecondary,
+              ),
+              onPressed: () => ref
+                  .read(themeModeProvider.notifier)
+                  .setMode(isDark ? ThemeMode.light : ThemeMode.dark),
             ),
           ],
         ),
@@ -150,14 +160,14 @@ class _ProfileBody extends ConsumerWidget {
                           ),
                         if (user?.verified ?? false) ...[
                           const SizedBox(width: 6),
-                          _VerifiedBadge(),
+                          const _VerifiedBadge(),
                         ],
                       ],
                     ),
                     const SizedBox(height: 2),
                     Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.location_on,
                           size: 14,
                           color: AppColors.primary,
@@ -329,9 +339,13 @@ class _ProfileBody extends ConsumerWidget {
               ),
               Divider(height: 1, color: palette.border),
               _ProfileListTile(
-                icon: Icons.notifications_none,
-                label: 'Notifications et urgences',
-                onTap: () => context.go(AppRoutes.emergencies),
+                icon: isDark
+                    ? Icons.light_mode_outlined
+                    : Icons.dark_mode_outlined,
+                label: isDark ? 'Mode clair' : 'Mode sombre',
+                onTap: () => ref
+                    .read(themeModeProvider.notifier)
+                    .setMode(isDark ? ThemeMode.light : ThemeMode.dark),
               ),
               Divider(height: 1, color: palette.border),
               _ProfileListTile(
@@ -427,9 +441,9 @@ class _VerifiedBadge extends StatelessWidget {
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        children: [
+        children: const [
           Icon(Icons.check_circle, size: 11, color: AppColors.success),
-          const SizedBox(width: 3),
+          SizedBox(width: 3),
           Text(
             'Vérifié',
             style: TextStyle(
@@ -460,7 +474,6 @@ class _Card extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: palette.border),
       ),
-      // Material requis pour les ink splashes des ListTile internes.
       child: Material(color: Colors.transparent, child: child),
     );
   }

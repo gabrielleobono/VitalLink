@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_palette.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
 import '../providers/pharmacy_provider.dart';
 import '../widgets/pharmacy_card.dart';
 import '../widgets/sector_map_preview.dart';
-import 'prescription_scanner_screen.dart';
 
 class PharmacyListScreen extends ConsumerStatefulWidget {
   const PharmacyListScreen({super.key});
@@ -98,6 +100,8 @@ class _PharmacyListScreenState extends ConsumerState<PharmacyListScreen> {
         padding: const EdgeInsets.only(top: 8, bottom: 32),
         children: [
           const SizedBox(height: 8),
+
+          // Recherche
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: TextField(
@@ -109,7 +113,7 @@ class _PharmacyListScreenState extends ConsumerState<PharmacyListScreen> {
               decoration: InputDecoration(
                 filled: true,
                 fillColor: palette.surface,
-                hintText: 'Rechercher une pharmacie ou un quarti...',
+                hintText: 'Rechercher une pharmacie ou un quartier...',
                 hintStyle: TextStyle(
                   color: palette.textSecondary,
                   fontSize: 14,
@@ -146,9 +150,9 @@ class _PharmacyListScreenState extends ConsumerState<PharmacyListScreen> {
                   borderRadius: BorderRadius.circular(16),
                   borderSide: BorderSide(color: palette.border),
                 ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: const BorderSide(
+                focusedBorder: const OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(16)),
+                  borderSide: BorderSide(
                     color: AppColors.tealPrimary,
                     width: 1.5,
                   ),
@@ -157,6 +161,8 @@ class _PharmacyListScreenState extends ConsumerState<PharmacyListScreen> {
             ),
           ),
           const SizedBox(height: 14),
+
+          // Filtres
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
@@ -178,7 +184,7 @@ class _PharmacyListScreenState extends ConsumerState<PharmacyListScreen> {
                       ),
                       alignment: Alignment.center,
                       child: Text(
-                        'Ouverte maintenant',
+                        'Toutes les officines',
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
@@ -208,7 +214,7 @@ class _PharmacyListScreenState extends ConsumerState<PharmacyListScreen> {
                       ),
                       alignment: Alignment.center,
                       child: Text(
-                        'Officine de garde confirmée',
+                        'De garde uniquement',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 12,
@@ -225,23 +231,12 @@ class _PharmacyListScreenState extends ConsumerState<PharmacyListScreen> {
             ),
           ),
           const SizedBox(height: 14),
+
+          // Bannière Scan IA
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: GestureDetector(
-              onTap: () async {
-                final scannedMed = await Navigator.push<String?>(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const PrescriptionScannerScreen(),
-                  ),
-                );
-                if (scannedMed != null && scannedMed.isNotEmpty) {
-                  _searchController.text = scannedMed;
-                  ref
-                      .read(pharmacySearchQueryProvider.notifier)
-                      .setQuery(scannedMed);
-                }
-              },
+              onTap: () => context.push(AppRoutes.scan),
               child: Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
@@ -284,7 +279,7 @@ class _PharmacyListScreenState extends ConsumerState<PharmacyListScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            'Scanner une ordonnance avec l\'IA',
+                            "Scanner une ordonnance avec l'IA",
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 13,
@@ -293,7 +288,7 @@ class _PharmacyListScreenState extends ConsumerState<PharmacyListScreen> {
                           ),
                           SizedBox(height: 2),
                           Text(
-                            'Recherche automatique des stocks',
+                            'Identifier les médicaments et localiser les officines',
                             style: TextStyle(
                               color: Color(0xFF94A3B8),
                               fontSize: 11,
@@ -312,7 +307,9 @@ class _PharmacyListScreenState extends ConsumerState<PharmacyListScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
+
+          // Liste des pharmacies
           if (pharmacies.isEmpty)
             Padding(
               padding: const EdgeInsets.all(40),
@@ -340,8 +337,19 @@ class _PharmacyListScreenState extends ConsumerState<PharmacyListScreen> {
               ),
             )
           else
-            ...pharmacies.map((p) => PharmacyCard(pharmacy: p)),
-          const SizedBox(height: 8),
+            ...pharmacies.map(
+              (p) => Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 6,
+                ),
+                child: PharmacyCard(pharmacy: p),
+              ),
+            ),
+
+          const SizedBox(height: 12),
+
+          // Carte sectorielle en bas du défilement
           SectorMapPreview(
             onDutyCount: onDutyCount,
             currentSector: cityLabel,
