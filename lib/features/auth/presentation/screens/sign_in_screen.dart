@@ -504,7 +504,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                 onPressed: _continueAsGuest,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.softBlue,
-                  foregroundColor: AppColors.info,
+                  foregroundColor: palette.textPrimary,
                   elevation: 0,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(

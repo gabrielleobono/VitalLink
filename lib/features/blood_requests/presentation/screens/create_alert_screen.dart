@@ -128,8 +128,8 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final hospitalsAsync = ref.watch(_hospitalsListProvider);
     final palette = context.palette;
+    final hospitalsAsync = ref.watch(_hospitalsListProvider);
 
     return Scaffold(
       backgroundColor: palette.background,
@@ -248,7 +248,7 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
           ),
           const SizedBox(height: 14),
 
-          _buildBloodGroupGrid(),
+          _buildBloodGroupGrid(palette),
 
           const SizedBox(height: 24),
 
@@ -264,6 +264,7 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
           Row(
             children: [
               _buildStepButton(
+                palette: palette,
                 icon: Icons.remove,
                 onTap: _isSubmitting || _unitsNeeded <= 1
                     ? null
@@ -282,6 +283,7 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
                 ),
               ),
               _buildStepButton(
+                palette: palette,
                 icon: Icons.add,
                 onTap: _isSubmitting
                     ? null
@@ -397,6 +399,7 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
           ),
           const SizedBox(height: 6),
           _buildTextField(
+            palette: palette,
             controller: _departmentController,
             hintText: 'Ex. Service Réanimation Pédiatrique - Bâtiment B',
             icon: Icons.meeting_room_outlined,
@@ -410,6 +413,7 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
           ),
           const SizedBox(height: 6),
           _buildTextField(
+            palette: palette,
             controller: _phoneController,
             hintText: '+237 233 42 12 34',
             keyboardType: TextInputType.phone,
@@ -432,7 +436,7 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
                   children: [
                     const Icon(
                       Icons.shield_outlined,
-                      color: AppColors.info,
+                      color: Colors.blueAccent,
                       size: 20,
                     ),
                     const SizedBox(width: 8),
@@ -475,6 +479,7 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
                 if (_isCaregiver) ...[
                   const SizedBox(height: 8),
                   _buildTextField(
+                    palette: palette,
                     controller: _caregiverCodeController,
                     hintText: 'Code professionnel de santé',
                     icon: Icons.verified_user_outlined,
@@ -508,8 +513,7 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
     );
   }
 
-  Widget _buildBloodGroupGrid() {
-    final palette = context.palette;
+  Widget _buildBloodGroupGrid(AppPalette palette) {
     final groups = BloodGroup.values;
 
     return GridView.builder(
@@ -556,10 +560,10 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
   }
 
   Widget _buildStepButton({
+    required AppPalette palette,
     required IconData icon,
     required VoidCallback? onTap,
   }) {
-    final palette = context.palette;
     return InkWell(
       borderRadius: BorderRadius.circular(8),
       onTap: onTap,
@@ -573,7 +577,9 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
         ),
         child: Icon(
           icon,
-          color: onTap != null ? palette.textPrimary : palette.textSecondary,
+          color: onTap != null
+              ? palette.textPrimary
+              : palette.textSecondary.withValues(alpha: 0.4),
           size: 20,
         ),
       ),
@@ -581,12 +587,12 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
   }
 
   Widget _buildTextField({
+    required AppPalette palette,
     required TextEditingController controller,
     required String hintText,
     IconData? icon,
     TextInputType keyboardType = TextInputType.text,
   }) {
-    final palette = context.palette;
     return TextField(
       controller: controller,
       enabled: !_isSubmitting,
@@ -612,9 +618,9 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: palette.border),
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+        focusedBorder: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(12)),
+          borderSide: BorderSide(color: AppColors.primary, width: 1.5),
         ),
       ),
     );
