@@ -6,6 +6,8 @@ import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_palette.dart';
 import '../../../../core/widgets/vital_link_logo.dart';
+import '../../../pharmacy/data/models/pharmacy.dart';
+import '../../../pharmacy/presentation/providers/pharmacy_provider.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
 import '../providers/blood_alert_provider.dart';
 import '../widgets/blood_alert_card.dart';
@@ -33,6 +35,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final alertsAsync = ref.watch(bloodAlertsProvider);
     final userProfileAsync = ref.watch(userProfileProvider);
     final profile = userProfileAsync.asData?.value;
+
+    final allPharmacies = ref.watch(filteredPharmaciesProvider);
+    final onDutyPharmacies = allPharmacies
+        .where((p) => p.isOnDuty)
+        .take(2)
+        .toList();
 
     final locationLabel = profile != null && profile.city.isNotEmpty
         ? '${profile.city}, ${profile.country == "Cameroun" ? "CM" : profile.country}'
@@ -166,9 +174,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       );
                     }),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
 
-                  // 3. Les 4 actions rapides compactes
+                  // 3. Les 4 actions rapides compactes (hauteur et espacement réduits)
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Row(
@@ -212,9 +220,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 18),
 
-                  // 4. Section Alertes à proximité
+                  // 4. Section Urgences (max 2)
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Row(
@@ -235,12 +243,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         ),
                         const Spacer(),
                         alertsAsync.when(
-                          data: (alerts) => Text(
-                            'Voir tout (${alerts.length})',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.primary,
+                          data: (alerts) => GestureDetector(
+                            onTap: () => context.go(AppRoutes.emergencies),
+                            child: Text(
+                              'Voir tout (${alerts.length})',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.primary,
+                              ),
                             ),
                           ),
                           loading: () => const SizedBox.shrink(),
@@ -255,7 +266,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     data: (alerts) {
                       if (alerts.isEmpty) {
                         return Padding(
-                          padding: const EdgeInsets.all(32),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 16,
+                            horizontal: 32,
+                          ),
                           child: Center(
                             child: Text(
                               'Aucune urgence à proximité pour le moment.',
@@ -264,9 +278,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           ),
                         );
                       }
+                      final displayedAlerts = alerts.take(2).toList();
                       return Column(
                         children: [
-                          for (final alert in alerts)
+                          for (final alert in displayedAlerts)
                             BloodAlertCard(
                               alert: alert,
                               onTap: () => context.push(
@@ -277,11 +292,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       );
                     },
                     loading: () => const Padding(
-                      padding: EdgeInsets.all(32),
+                      padding: EdgeInsets.all(24),
                       child: Center(child: CircularProgressIndicator()),
                     ),
                     error: (error, _) => Padding(
-                      padding: const EdgeInsets.all(32),
+                      padding: const EdgeInsets.all(24),
                       child: Center(
                         child: Text(
                           'Erreur de chargement des alertes : $error',
@@ -291,9 +306,159 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       ),
                     ),
                   ),
+
+                  const SizedBox(height: 18),
+
+                  // 5. Section Pharmacies de garde (max 2)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.circle,
+                          size: 8,
+                          color: AppColors.tealPrimary,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Pharmacies de garde',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: palette.textPrimary,
+                          ),
+                        ),
+                        const Spacer(),
+                        GestureDetector(
+                          onTap: () => context.go(AppRoutes.pharmacies),
+                          child: Text(
+                            'Voir tout (${allPharmacies.where((p) => p.isOnDuty).length})',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.tealPrimary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  if (onDutyPharmacies.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 16,
+                        horizontal: 32,
+                      ),
+                      child: Center(
+                        child: Text(
+                          'Aucune officine de garde détectée.',
+                          style: TextStyle(color: palette.textSecondary),
+                        ),
+                      ),
+                    )
+                  else
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Column(
+                        children: [
+                          for (final pharmacy in onDutyPharmacies)
+                            _buildDashboardPharmacyTile(
+                              pharmacy: pharmacy,
+                              palette: palette,
+                              onTap: () => context.go(AppRoutes.pharmacies),
+                            ),
+                        ],
+                      ),
+                    ),
                 ],
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDashboardPharmacyTile({
+    required Pharmacy pharmacy,
+    required AppPalette palette,
+    required VoidCallback onTap,
+  }) {
+    final distanceText = pharmacy.distanceInMeters != null
+        ? '${(pharmacy.distanceInMeters! / 1000).toStringAsFixed(1)} km'
+        : null;
+
+    final locationText = pharmacy.neighborhood.isNotEmpty
+        ? pharmacy.neighborhood
+        : pharmacy.address;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: palette.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: palette.border),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+        onTap: onTap,
+        leading: CircleAvatar(
+          radius: 18,
+          backgroundColor: AppColors.tealLight,
+          child: const Icon(
+            Icons.local_pharmacy_rounded,
+            color: AppColors.tealPrimary,
+            size: 18,
+          ),
+        ),
+        title: Text(
+          pharmacy.name,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: palette.textPrimary,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        subtitle: Text(
+          locationText,
+          style: TextStyle(fontSize: 12, color: palette.textSecondary),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        trailing: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: AppColors.tealLight,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: const Text(
+                'De garde',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.tealPrimary,
+                ),
+              ),
+            ),
+            if (distanceText != null) ...[
+              const SizedBox(height: 2),
+              Text(
+                distanceText,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: palette.textSecondary,
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -406,30 +571,30 @@ class _QuickActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(color: color.withValues(alpha: 0.2)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
                 color: color,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(icon, color: Colors.white, size: 18),
+              child: Icon(icon, color: Colors.white, size: 16),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
-                fontSize: 11,
+                fontSize: 10,
                 fontWeight: FontWeight.w700,
                 color: color,
               ),
