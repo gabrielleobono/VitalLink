@@ -15,8 +15,8 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verifie les filtres rapides
-      expect(find.text('Ouverte maintenant'), findsOneWidget);
-      expect(find.textContaining('Officine de garde'), findsOneWidget);
+      expect(find.textContaining('Toutes'), findsOneWidget);
+      expect(find.textContaining('De garde uniquement'), findsOneWidget);
 
       // Verifie la presence du banner IA en bas
       expect(find.textContaining('Scanner une ordonnance'), findsOneWidget);
@@ -35,7 +35,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Clique sur le bouton de filtre de garde
-      final dutyFilterButton = find.textContaining('Officine de garde');
+      final dutyFilterButton = find.textContaining('De garde uniquement');
       expect(dutyFilterButton, findsOneWidget);
       await tester.tap(dutyFilterButton);
       await tester.pumpAndSettle();
