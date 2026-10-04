@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_palette.dart';
 import '../../../../core/utils/blood_compatibility.dart';
 import '../../data/models/hospital.dart';
 
@@ -129,21 +128,20 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
   @override
   Widget build(BuildContext context) {
     final hospitalsAsync = ref.watch(_hospitalsListProvider);
-    final palette = context.palette;
 
     return Scaffold(
-      backgroundColor: palette.background,
+      backgroundColor: const Color(0xFF0F172A),
       appBar: AppBar(
-        backgroundColor: palette.background,
+        backgroundColor: const Color(0xFF0F172A),
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: palette.textPrimary),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text(
+        title: const Text(
           'Lancer Une Urgence Sang',
           style: TextStyle(
-            color: palette.textPrimary,
+            color: Colors.white,
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
@@ -153,8 +151,10 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
       bottomNavigationBar: Container(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
         decoration: BoxDecoration(
-          color: palette.surface,
-          border: Border(top: BorderSide(color: palette.border)),
+          color: const Color(0xFF1E293B),
+          border: Border(
+            top: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
+          ),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -207,7 +207,10 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
             Text(
               'Notification prioritaire envoyée aux donneurs compatibles à proximité.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: palette.textSecondary, fontSize: 11),
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.5),
+                fontSize: 11,
+              ),
             ),
           ],
         ),
@@ -231,10 +234,10 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
                 ),
               ),
               const SizedBox(width: 8),
-              Text(
+              const Text(
                 'Groupe sanguin requis',
                 style: TextStyle(
-                  color: palette.textPrimary,
+                  color: Colors.white,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
@@ -244,7 +247,10 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
           const SizedBox(height: 4),
           Text(
             'Sélectionnez le groupe ciblé',
-            style: TextStyle(color: palette.textSecondary, fontSize: 13),
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.6),
+              fontSize: 13,
+            ),
           ),
           const SizedBox(height: 14),
 
@@ -252,10 +258,10 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
 
           const SizedBox(height: 24),
 
-          Text(
+          const Text(
             'Nombre de poches',
             style: TextStyle(
-              color: palette.textPrimary,
+              color: Colors.white,
               fontSize: 15,
               fontWeight: FontWeight.bold,
             ),
@@ -274,8 +280,8 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
                 alignment: Alignment.center,
                 child: Text(
                   '$_unitsNeeded',
-                  style: TextStyle(
-                    color: palette.textPrimary,
+                  style: const TextStyle(
+                    color: Colors.white,
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                   ),
@@ -290,7 +296,10 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
               const SizedBox(width: 16),
               Text(
                 'Poches calibrées de 450ml',
-                style: TextStyle(color: palette.textSecondary, fontSize: 13),
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.5),
+                  fontSize: 13,
+                ),
               ),
             ],
           ),
@@ -305,10 +314,10 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
                 size: 20,
               ),
               const SizedBox(width: 8),
-              Text(
+              const Text(
                 'Destination hospitalière',
                 style: TextStyle(
-                  color: palette.textPrimary,
+                  color: Colors.white,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
@@ -318,41 +327,43 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
           const SizedBox(height: 4),
           Text(
             'Point de réception et transmission',
-            style: TextStyle(color: palette.textSecondary, fontSize: 13),
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.6),
+              fontSize: 13,
+            ),
           ),
           const SizedBox(height: 14),
 
-          Text(
+          const Text(
             'Hôpital / Clinique',
-            style: TextStyle(color: palette.textSecondary, fontSize: 13),
+            style: TextStyle(color: Colors.white70, fontSize: 13),
           ),
           const SizedBox(height: 6),
           hospitalsAsync.when(
             data: (hospitals) {
               if (hospitals.isEmpty) {
-                return Text(
+                return const Text(
                   "Aucun hôpital enregistré.",
-                  style: TextStyle(color: palette.textSecondary),
+                  style: TextStyle(color: Colors.white54),
                 );
               }
               return Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14),
                 decoration: BoxDecoration(
-                  color: palette.surface,
+                  color: const Color(0xFF1E293B),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: palette.border),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.12),
+                  ),
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<Hospital>(
                     value: _hospital,
                     isExpanded: true,
-                    dropdownColor: palette.surface,
-                    hint: Text(
+                    dropdownColor: const Color(0xFF1E293B),
+                    hint: const Text(
                       'Sélectionner un établissement',
-                      style: TextStyle(
-                        color: palette.textSecondary,
-                        fontSize: 14,
-                      ),
+                      style: TextStyle(color: Colors.white54, fontSize: 14),
                     ),
                     items: [
                       for (final hospital in hospitals)
@@ -360,8 +371,8 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
                           value: hospital,
                           child: Text(
                             '${hospital.name} (${hospital.city})',
-                            style: TextStyle(
-                              color: palette.textPrimary,
+                            style: const TextStyle(
+                              color: Colors.white,
                               fontSize: 14,
                             ),
                           ),
@@ -383,17 +394,17 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
               );
             },
             loading: () => const LinearProgressIndicator(),
-            error: (_, _) => Text(
+            error: (_, _) => const Text(
               'Erreur de chargement des hôpitaux.',
-              style: TextStyle(color: palette.textSecondary),
+              style: TextStyle(color: Colors.white54),
             ),
           ),
 
           const SizedBox(height: 14),
 
-          Text(
+          const Text(
             'Service & Bâtiment',
-            style: TextStyle(color: palette.textSecondary, fontSize: 13),
+            style: TextStyle(color: Colors.white70, fontSize: 13),
           ),
           const SizedBox(height: 6),
           _buildTextField(
@@ -404,9 +415,9 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
 
           const SizedBox(height: 14),
 
-          Text(
+          const Text(
             'Numéro direct de la permanence ou du médecin',
-            style: TextStyle(color: palette.textSecondary, fontSize: 13),
+            style: TextStyle(color: Colors.white70, fontSize: 13),
           ),
           const SizedBox(height: 6),
           _buildTextField(
@@ -421,26 +432,26 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: palette.surface,
+              color: const Color(0xFF1E293B),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: palette.border),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  children: [
-                    const Icon(
+                  children: const [
+                    Icon(
                       Icons.shield_outlined,
-                      color: AppColors.info,
+                      color: Colors.blueAccent,
                       size: 20,
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         'Alerte Citoyenne Immédiate',
                         style: TextStyle(
-                          color: palette.textPrimary,
+                          color: Colors.white,
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
                         ),
@@ -451,16 +462,19 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
                 const SizedBox(height: 4),
                 Text(
                   'Diffusion directe aux donneurs compatibles',
-                  style: TextStyle(color: palette.textSecondary, fontSize: 12),
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.6),
+                    fontSize: 12,
+                  ),
                 ),
-                Divider(color: palette.border, height: 20),
+                const Divider(color: Colors.white12, height: 20),
                 Row(
                   children: [
                     Expanded(
                       child: Text(
                         'Vous êtes soignant ? Ajouter un code de validation',
                         style: TextStyle(
-                          color: palette.textPrimary,
+                          color: Colors.white.withValues(alpha: 0.85),
                           fontSize: 12,
                         ),
                       ),
@@ -497,7 +511,7 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
               ),
               child: Text(
                 _errorMessage!,
-                style: TextStyle(color: palette.textPrimary, fontSize: 13),
+                style: const TextStyle(color: Colors.white, fontSize: 13),
               ),
             ),
           ],
@@ -509,7 +523,6 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
   }
 
   Widget _buildBloodGroupGrid() {
-    final palette = context.palette;
     final groups = BloodGroup.values;
 
     return GridView.builder(
@@ -534,17 +547,19 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
           child: Container(
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: isSelected ? AppColors.primary : palette.surface,
+              color: isSelected ? AppColors.primary : const Color(0xFF1E293B),
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                color: isSelected ? AppColors.primary : palette.border,
+                color: isSelected
+                    ? AppColors.primary
+                    : Colors.white.withValues(alpha: 0.12),
                 width: isSelected ? 1.5 : 1,
               ),
             ),
             child: Text(
               group.label,
               style: TextStyle(
-                color: isSelected ? Colors.white : palette.textPrimary,
+                color: Colors.white,
                 fontSize: 16,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
               ),
@@ -559,7 +574,6 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
     required IconData icon,
     required VoidCallback? onTap,
   }) {
-    final palette = context.palette;
     return InkWell(
       borderRadius: BorderRadius.circular(8),
       onTap: onTap,
@@ -567,13 +581,13 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
         width: 38,
         height: 38,
         decoration: BoxDecoration(
-          color: palette.surface,
+          color: const Color(0xFF1E293B),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: palette.border),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
         ),
         child: Icon(
           icon,
-          color: onTap != null ? palette.textPrimary : palette.textSecondary,
+          color: onTap != null ? Colors.white : Colors.white24,
           size: 20,
         ),
       ),
@@ -586,31 +600,30 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
     IconData? icon,
     TextInputType keyboardType = TextInputType.text,
   }) {
-    final palette = context.palette;
     return TextField(
       controller: controller,
       enabled: !_isSubmitting,
       keyboardType: keyboardType,
-      style: TextStyle(color: palette.textPrimary, fontSize: 14),
+      style: const TextStyle(color: Colors.white, fontSize: 14),
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: TextStyle(color: palette.textSecondary, fontSize: 13),
+        hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
         prefixIcon: icon != null
-            ? Icon(icon, color: palette.textSecondary, size: 20)
+            ? Icon(icon, color: Colors.white54, size: 20)
             : null,
         filled: true,
-        fillColor: palette.surface,
+        fillColor: const Color(0xFF1E293B),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 14,
           vertical: 12,
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: palette.border),
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.12)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: palette.border),
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.12)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
