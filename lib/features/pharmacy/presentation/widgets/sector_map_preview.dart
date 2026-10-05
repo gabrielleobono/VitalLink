@@ -52,16 +52,21 @@ class SectorMapPreview extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(
-                'Carte du secteur $currentSector',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: palette.textPrimary,
+              Expanded(
+                child: Text(
+                  'Carte du secteur $currentSector',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: palette.textPrimary,
+                  ),
                 ),
               ),
+              const SizedBox(width: 8),
               Text(
                 '$onDutyCount de garde actives',
                 style: const TextStyle(

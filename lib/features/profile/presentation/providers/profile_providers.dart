@@ -56,6 +56,7 @@ class ProfileCreationController {
     required String displayName,
     required String country,
     required String city,
+    required String region,
     required bool isDonor,
     String? bloodGroup,
   }) async {
@@ -67,6 +68,7 @@ class ProfileCreationController {
           displayName: displayName,
           country: country,
           city: city,
+          region: region,
           isDonor: isDonor,
           bloodGroup: bloodGroup,
         );
@@ -75,4 +77,26 @@ class ProfileCreationController {
 
 final profileCreationControllerProvider = Provider<ProfileCreationController>(
   (ref) => ProfileCreationController(ref),
+);
+
+/// Modification de la localisation (écran "Modifier ma localisation").
+class ProfileLocationController {
+  ProfileLocationController(this._ref);
+
+  final Ref _ref;
+
+  Future<void> updateLocation({
+    required String country,
+    required String city,
+    required String region,
+  }) async {
+    final uid = await _ref.read(currentUserIdProvider.future);
+    await _ref
+        .read(profileRepositoryProvider)
+        .updateLocation(uid: uid, country: country, city: city, region: region);
+  }
+}
+
+final profileLocationControllerProvider = Provider<ProfileLocationController>(
+  (ref) => ProfileLocationController(ref),
 );

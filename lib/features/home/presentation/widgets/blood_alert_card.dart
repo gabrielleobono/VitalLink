@@ -13,6 +13,7 @@ class BloodAlertCard extends ConsumerWidget {
   final VoidCallback onTap;
 
   bool get _isVerified => alert.alertBadgeVariant == 'verified';
+  bool get _isClosed => alert.status != 'open';
 
   String get _bottomTagLabel {
     final raw = alert.bloodGroupTagLabel.trim();
@@ -132,6 +133,38 @@ class BloodAlertCard extends ConsumerWidget {
                   ),
                 ),
                 const Spacer(),
+                if (_isClosed) ...[
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.tealLight,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.check_circle_rounded,
+                          size: 12,
+                          color: AppColors.tealPrimary,
+                        ),
+                        const SizedBox(width: 3),
+                        Text(
+                          'Clôturée',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.tealPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
                 Row(
                   children: [
                     Icon(
@@ -312,28 +345,54 @@ class BloodAlertCard extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                ElevatedButton.icon(
-                  onPressed: onTap,
-                  icon: const Icon(Icons.volunteer_activism_rounded, size: 15),
-                  label: const Text('Je viens donner'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryRed,
-                    foregroundColor: Colors.white,
-                    minimumSize: Size.zero,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 9,
+                if (_isClosed)
+                  OutlinedButton.icon(
+                    onPressed: onTap,
+                    icon: const Icon(Icons.info_outline_rounded, size: 15),
+                    label: const Text('Voir le détail'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: palette.textSecondary,
+                      side: BorderSide(color: palette.border),
+                      minimumSize: Size.zero,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 9,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      textStyle: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                  )
+                else
+                  ElevatedButton.icon(
+                    onPressed: onTap,
+                    icon: const Icon(
+                      Icons.volunteer_activism_rounded,
+                      size: 15,
                     ),
-                    elevation: 0,
-                    textStyle: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
+                    label: const Text('Je viens donner'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryRed,
+                      foregroundColor: Colors.white,
+                      minimumSize: Size.zero,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 9,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      elevation: 0,
+                      textStyle: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
           ],

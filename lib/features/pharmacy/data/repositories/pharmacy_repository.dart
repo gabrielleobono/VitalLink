@@ -75,10 +75,18 @@ class PharmacyRepository {
     ),
   ];
 
-  Stream<List<Pharmacy>> watchPharmacies() {
+  /// Pharmacies limitées au [country] et à la [region] de l'utilisateur
+  /// courant — même règle de zone que les alertes de sang (pas de pharmacie
+  /// hors de son pays/région).
+  Stream<List<Pharmacy>> watchPharmacies({
+    required String country,
+    required String region,
+  }) {
     try {
       return _firestore
           .collection('pharmacies')
+          .where('country', isEqualTo: country)
+          .where('region', isEqualTo: region)
           .snapshots(includeMetadataChanges: true)
           .map((snapshot) {
             if (snapshot.docs.isEmpty) {

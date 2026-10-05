@@ -339,6 +339,12 @@ class _ProfileBody extends ConsumerWidget {
               ),
               Divider(height: 1, color: palette.border),
               _ProfileListTile(
+                icon: Icons.location_on_outlined,
+                label: 'Modifier ma localisation',
+                onTap: () => context.push(AppRoutes.editLocation),
+              ),
+              Divider(height: 1, color: palette.border),
+              _ProfileListTile(
                 icon: isDark
                     ? Icons.light_mode_outlined
                     : Icons.dark_mode_outlined,

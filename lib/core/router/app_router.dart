@@ -12,6 +12,7 @@ import '../../features/donor_guide/presentation/screens/donor_guide_screen.dart'
 import '../../features/home/presentation/screens/dashboard_screen.dart';
 import '../../features/home/presentation/widgets/home_shell.dart';
 import '../../features/pharmacy/presentation/screens/pharmacy_list_screen.dart';
+import '../../features/profile/presentation/screens/edit_location_screen.dart';
 import '../../features/profile/presentation/screens/my_alerts_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/scan_ai/presentation/scan_screen.dart';
@@ -28,6 +29,7 @@ abstract final class AppRoutes {
   static const scan = '/scan';
   static const donorGuide = '/donor-guide';
   static const myAlerts = '/profile/my-alerts';
+  static const editLocation = '/profile/edit-location';
 
   static const createEmergency = '/emergencies/new';
   static String emergencyDetail(String alertId) => '/emergencies/$alertId';
@@ -112,6 +114,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.myAlerts,
       builder: (context, state) => const MyAlertsScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.editLocation,
+      builder: (context, state) => const EditLocationScreen(),
     ),
     GoRoute(
       path: '/emergencies/:alertId',

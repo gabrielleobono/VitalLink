@@ -100,24 +100,28 @@ class PharmacyCard extends StatelessWidget {
                   ),
                 )
               else
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 9,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: palette.background,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: palette.border),
-                  ),
-                  child: Text(
-                    pharmacy.dutySchedule.isNotEmpty
-                        ? pharmacy.dutySchedule
-                        : 'Ouvert',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: palette.textSecondary,
+                Flexible(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 9,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: palette.background,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: palette.border),
+                    ),
+                    child: Text(
+                      pharmacy.dutySchedule.isNotEmpty
+                          ? pharmacy.dutySchedule
+                          : 'Ouvert',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: palette.textSecondary,
+                      ),
                     ),
                   ),
                 ),

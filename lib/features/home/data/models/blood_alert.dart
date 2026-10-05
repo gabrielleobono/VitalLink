@@ -16,6 +16,9 @@ class BloodAlert {
     required this.units,
     required this.criticality,
     required this.hospitalId,
+    required this.createdBy,
+    required this.country,
+    required this.region,
     required this.status,
     required this.createdAt,
     required this.expiresAt,
@@ -35,6 +38,9 @@ class BloodAlert {
   final int units;
   final String criticality;
   final String hospitalId;
+  final String createdBy;
+  final String country;
+  final String region;
   final String status;
   final DateTime createdAt;
   final DateTime expiresAt;
@@ -56,6 +62,9 @@ class BloodAlert {
       units: (data['units'] as num?)?.toInt() ?? 0,
       criticality: data['criticality'] as String? ?? 'medium',
       hospitalId: data['hospitalId'] as String? ?? '',
+      createdBy: data['createdBy'] as String? ?? '',
+      country: data['country'] as String? ?? '',
+      region: data['region'] as String? ?? '',
       status: data['status'] as String? ?? 'open',
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       expiresAt: (data['expiresAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
