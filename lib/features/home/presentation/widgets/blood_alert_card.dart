@@ -370,7 +370,10 @@ class BloodAlertCard extends ConsumerWidget {
                 else
                   ElevatedButton.icon(
                     onPressed: onTap,
-                    icon: const Icon(Icons.volunteer_activism_rounded, size: 15),
+                    icon: const Icon(
+                      Icons.volunteer_activism_rounded,
+                      size: 15,
+                    ),
                     label: const Text('Je viens donner'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primaryRed,

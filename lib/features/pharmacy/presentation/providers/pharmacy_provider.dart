@@ -66,10 +66,7 @@ final rawPharmaciesStreamProvider = StreamProvider.autoDispose<List<Pharmacy>>((
     return;
   }
   final repo = ref.watch(pharmacyRepositoryProvider);
-  yield* repo.watchPharmacies(
-    country: profile.country,
-    region: profile.region,
-  );
+  yield* repo.watchPharmacies(country: profile.country, region: profile.region);
 });
 
 /// Toutes les pharmacies du secteur (données réelles ou repli), sans la

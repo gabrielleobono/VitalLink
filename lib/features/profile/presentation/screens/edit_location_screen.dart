@@ -14,8 +14,7 @@ class EditLocationScreen extends ConsumerStatefulWidget {
   const EditLocationScreen({super.key});
 
   @override
-  ConsumerState<EditLocationScreen> createState() =>
-      _EditLocationScreenState();
+  ConsumerState<EditLocationScreen> createState() => _EditLocationScreenState();
 }
 
 class _EditLocationScreenState extends ConsumerState<EditLocationScreen> {
@@ -123,7 +122,10 @@ class _EditLocationScreenState extends ConsumerState<EditLocationScreen> {
         scrolledUnderElevation: 0,
         title: Text(
           'Modifier ma localisation',
-          style: TextStyle(color: palette.textPrimary, fontWeight: FontWeight.w700),
+          style: TextStyle(
+            color: palette.textPrimary,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
       body: profileAsync.when(
@@ -164,7 +166,9 @@ class _EditLocationScreenState extends ConsumerState<EditLocationScreen> {
                 ),
                 const SizedBox(height: 18),
                 _SelectField(
-                  label: AfricaLocations.regionLabelFor(_country!).toUpperCase(),
+                  label: AfricaLocations.regionLabelFor(
+                    _country!,
+                  ).toUpperCase(),
                   value: _region!,
                   onTap: _pickRegion,
                 ),
@@ -172,7 +176,10 @@ class _EditLocationScreenState extends ConsumerState<EditLocationScreen> {
                   const SizedBox(height: 12),
                   Text(
                     _errorMessage!,
-                    style: const TextStyle(color: AppColors.primary, fontSize: 13),
+                    style: const TextStyle(
+                      color: AppColors.primary,
+                      fontSize: 13,
+                    ),
                   ),
                 ],
                 const SizedBox(height: 24),
@@ -211,7 +218,9 @@ class _EditLocationScreenState extends ConsumerState<EditLocationScreen> {
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
         error: (error, stack) => Center(
           child: Text(
             'Impossible de charger le profil.',
@@ -269,7 +278,11 @@ class _SelectField extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                Icon(Icons.chevron_right, size: 18, color: palette.textSecondary),
+                Icon(
+                  Icons.chevron_right,
+                  size: 18,
+                  color: palette.textSecondary,
+                ),
               ],
             ),
           ),
