@@ -44,13 +44,17 @@ class VitaAiService {
                 {'role': 'user', 'content': userPrompt},
               ],
               'temperature': 0.7,
-              'max_tokens': 60,
+              'max_tokens': 120,
             }),
           )
           .timeout(const Duration(seconds: 5));
       if (response.statusCode != 200) return null;
       final data = jsonDecode(utf8.decode(response.bodyBytes));
-      final content = data['choices']?[0]?['message']?['content'] as String?;
+      final choice = data['choices']?[0];
+      // Coupé par la limite de tokens avant la fin de la phrase : on
+      // préfère la phrase de repli locale plutôt qu'un texte tronqué.
+      if (choice?['finish_reason'] == 'length') return null;
+      final content = choice?['message']?['content'] as String?;
       final text = content?.trim().replaceAll('"', '');
       return (text == null || text.isEmpty) ? null : text;
     } catch (_) {

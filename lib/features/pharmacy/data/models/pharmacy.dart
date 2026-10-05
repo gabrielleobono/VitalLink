@@ -12,6 +12,8 @@ class Pharmacy {
   final List<String> services;
   final List<String> availableMedicines;
   final double? distanceInMeters;
+  final String country;
+  final String region;
 
   const Pharmacy({
     required this.id,
@@ -27,6 +29,8 @@ class Pharmacy {
     this.services = const [],
     this.availableMedicines = const [],
     this.distanceInMeters,
+    this.country = '',
+    this.region = '',
   });
 
   String get formattedDistance {
@@ -59,6 +63,8 @@ class Pharmacy {
               ?.map((e) => e.toString())
               .toList() ??
           const [],
+      country: map['country'] as String? ?? '',
+      region: map['region'] as String? ?? '',
     );
   }
 
@@ -75,6 +81,8 @@ class Pharmacy {
       'isVerified': isVerified,
       'services': services,
       'availableMedicines': availableMedicines,
+      'country': country,
+      'region': region,
     };
   }
 
@@ -93,6 +101,8 @@ class Pharmacy {
       services: services,
       availableMedicines: availableMedicines,
       distanceInMeters: distanceInMeters ?? this.distanceInMeters,
+      country: country,
+      region: region,
     );
   }
 }

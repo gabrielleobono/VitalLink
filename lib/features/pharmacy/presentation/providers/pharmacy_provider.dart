@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
+import '../../../profile/presentation/providers/profile_providers.dart';
 import '../../data/models/pharmacy.dart';
 import '../../data/repositories/pharmacy_repository.dart';
 
@@ -58,19 +59,34 @@ final pharmacyFilterProvider =
 
 final rawPharmaciesStreamProvider = StreamProvider.autoDispose<List<Pharmacy>>((
   ref,
-) {
+) async* {
+  final profile = await ref.watch(userProfileProvider.future);
+  if (profile == null || profile.country.isEmpty || profile.region.isEmpty) {
+    yield const [];
+    return;
+  }
   final repo = ref.watch(pharmacyRepositoryProvider);
-  return repo.watchPharmacies();
+  yield* repo.watchPharmacies(
+    country: profile.country,
+    region: profile.region,
+  );
+});
+
+/// Toutes les pharmacies du secteur (données réelles ou repli), sans la
+/// recherche texte ni le filtre "de garde uniquement" appliqués — sert à
+/// calculer des stats globales (ex: compteur "de garde actives") qui ne
+/// doivent pas varier avec ce que l'utilisateur tape ou filtre.
+final allPharmaciesProvider = Provider<List<Pharmacy>>((ref) {
+  final pharmaciesAsync = ref.watch(rawPharmaciesStreamProvider);
+  return pharmaciesAsync.asData?.value ?? PharmacyRepository.fallbackPharmacies;
 });
 
 final filteredPharmaciesProvider = Provider<List<Pharmacy>>((ref) {
-  final pharmaciesAsync = ref.watch(rawPharmaciesStreamProvider);
   final query = ref.watch(pharmacySearchQueryProvider).trim().toLowerCase();
   final filter = ref.watch(pharmacyFilterProvider);
   final userPos = ref.watch(userPositionProvider).asData?.value;
 
-  final pharmacies =
-      pharmaciesAsync.asData?.value ?? PharmacyRepository.fallbackPharmacies;
+  final pharmacies = ref.watch(allPharmaciesProvider);
 
   var list = pharmacies.map((pharmacy) {
     if (userPos != null &&

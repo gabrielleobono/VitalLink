@@ -28,6 +28,7 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
   final _nameController = TextEditingController();
   String _country = 'Cameroun';
   String _city = 'Douala';
+  String _region = AfricaLocations.regionOptionsFor('Cameroun').first;
   BloodGroup? _bloodGroup;
   bool _readyToDonate = true;
   bool _isSubmitting = false;
@@ -54,6 +55,7 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
     setState(() {
       _country = selected;
       _city = AfricaLocations.citiesByCountry[selected]!.first;
+      _region = AfricaLocations.regionOptionsFor(selected).first;
     });
   }
 
@@ -70,6 +72,21 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
     );
     if (selected == null || !mounted) return;
     setState(() => _city = selected);
+  }
+
+  Future<void> _pickRegion() async {
+    final regions = AfricaLocations.regionOptionsFor(_country);
+    final selected = await showModalBottomSheet<String>(
+      context: context,
+      builder: (context) => _PickerSheet(
+        title: AfricaLocations.regionLabelFor(_country),
+        options: regions,
+        optionLabel: (r) => r,
+        selected: _region,
+      ),
+    );
+    if (selected == null || !mounted) return;
+    setState(() => _region = selected);
   }
 
   Future<void> _submit() async {
@@ -89,6 +106,7 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
             displayName: name,
             country: _country,
             city: _city,
+            region: _region,
             isDonor: _readyToDonate,
             bloodGroup: _bloodGroup?.label,
           )
@@ -186,6 +204,12 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 18),
+            _SelectField(
+              label: AfricaLocations.regionLabelFor(_country).toUpperCase(),
+              value: _region,
+              onTap: _pickRegion,
             ),
             const SizedBox(height: 18),
             Row(

@@ -5,11 +5,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_palette.dart';
 import '../../../../core/utils/blood_compatibility.dart';
+import '../../../profile/presentation/providers/profile_providers.dart';
 import '../../data/models/hospital.dart';
 
+/// Hôpitaux limités au pays et à la région de l'utilisateur courant — même
+/// règle de zone que les alertes et les pharmacies.
 final _hospitalsListProvider = FutureProvider<List<Hospital>>((ref) async {
+  final profile = await ref.watch(userProfileProvider.future);
+  if (profile == null || profile.country.isEmpty || profile.region.isEmpty) {
+    return const [];
+  }
   final snapshot = await FirebaseFirestore.instance
       .collection('hospitals')
+      .where('country', isEqualTo: profile.country)
+      .where('region', isEqualTo: profile.region)
       .get();
   return snapshot.docs
       .map((doc) => Hospital.fromFirestore(doc.id, doc.data()))
@@ -64,6 +73,7 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
     });
 
     try {
+      final profile = ref.read(userProfileProvider).asData?.value;
       final compatible = BloodCompatibility.compatibleDonorsFor(
         bloodGroup,
       ).map((g) => g.label).toList();
@@ -85,6 +95,8 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
             'hospitalId': hospital.id,
             'location': hospital.location,
             'createdBy': user.uid,
+            'country': profile?.country ?? '',
+            'region': profile?.region ?? '',
             'status': 'open',
             'createdAt': FieldValue.serverTimestamp(),
             'expiresAt': Timestamp.fromDate(
@@ -100,8 +112,8 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
             'alertBadgeLabel': isVerifiedCaregiver
                 ? 'Alerte médicale vérifiée'
                 : 'Alerte citoyenne',
-            'alertBadgeVariant': isVerifiedCaregiver ? 'medical' : 'citizen',
-            'source': isVerifiedCaregiver ? 'medical' : 'citizen',
+            'alertBadgeVariant': isVerifiedCaregiver ? 'verified' : 'citizen',
+            'source': isVerifiedCaregiver ? 'medical_staff' : 'citizen',
             'bloodGroupTagLabel': bloodGroup.label,
             'ctaSubtitleText': '$_unitsNeeded poche(s) · ${hospital.name}',
           });
@@ -436,7 +448,7 @@ class _CreateAlertScreenState extends ConsumerState<CreateAlertScreen> {
                   children: [
                     const Icon(
                       Icons.shield_outlined,
-                      color: Colors.blueAccent,
+                      color: AppColors.info,
                       size: 20,
                     ),
                     const SizedBox(width: 8),

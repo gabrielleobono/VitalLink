@@ -12,6 +12,7 @@ class UserProfileModel extends UserProfile {
     required super.phone,
     required super.country,
     required super.city,
+    required super.region,
     required super.verified,
     required super.isDonor,
   });
@@ -27,6 +28,7 @@ class UserProfileModel extends UserProfile {
       phone: data['phone'] as String? ?? '',
       country: data['country'] as String? ?? '',
       city: data['city'] as String? ?? '',
+      region: data['region'] as String? ?? '',
       verified: data['verified'] as bool? ?? false,
       isDonor: data['isDonor'] as bool? ?? false,
     );

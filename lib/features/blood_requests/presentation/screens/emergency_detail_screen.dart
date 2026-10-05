@@ -5,6 +5,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../../../core/services/launcher_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_palette.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../home/data/models/blood_alert.dart';
 import '../../../home/presentation/providers/blood_alert_provider.dart';
 import '../providers/hospital_provider.dart';
@@ -115,6 +116,10 @@ class _EmergencyDetailBody extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final palette = context.palette;
     final hospitalAsync = ref.watch(hospitalProvider(alert.hospitalId));
+    final currentUserId = ref.watch(currentUserIdProvider).asData?.value;
+    final isOwner =
+        alert.createdBy.isNotEmpty && currentUserId == alert.createdBy;
+    final isOpen = alert.status == 'open';
     final shortCode = alert.id.length > 6
         ? alert.id.substring(0, 6).toUpperCase()
         : alert.id.toUpperCase();
@@ -359,37 +364,132 @@ class _EmergencyDetailBody extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 20),
-        ElevatedButton.icon(
-          onPressed: () {
-            final hospital = hospitalAsync.value;
-            showConfirmDonationSheet(
-              context: context,
-              alert: alert,
-              hospital: hospital,
-            );
-          },
-          icon: const Icon(Icons.volunteer_activism_rounded, size: 18),
-          label: const Text(
-            "Je viens donner (M'engager)",
-            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
-          ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primaryRed,
-            foregroundColor: Colors.white,
-            minimumSize: const Size.fromHeight(52),
-            shape: RoundedRectangleBorder(
+        if (!isOpen)
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: AppColors.tealLight,
               borderRadius: BorderRadius.circular(14),
             ),
-            elevation: 0,
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.check_circle_rounded,
+                  color: AppColors.tealPrimary,
+                  size: 20,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Cette alerte est clôturée — le besoin est couvert.',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                      color: AppColors.tealPrimary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          )
+        else if (isOwner)
+          OutlinedButton.icon(
+            onPressed: () => _confirmCloseAlert(context, ref, alert),
+            icon: const Icon(Icons.task_alt_rounded, size: 18),
+            label: const Text(
+              "Clôturer l'alerte (besoin couvert)",
+              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+            ),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.primaryRed,
+              side: const BorderSide(color: AppColors.primaryRed),
+              minimumSize: const Size.fromHeight(52),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+          )
+        else
+          ElevatedButton.icon(
+            onPressed: () {
+              final hospital = hospitalAsync.value;
+              showConfirmDonationSheet(
+                context: context,
+                alert: alert,
+                hospital: hospital,
+              );
+            },
+            icon: const Icon(Icons.volunteer_activism_rounded, size: 18),
+            label: const Text(
+              "Je viens donner (M'engager)",
+              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryRed,
+              foregroundColor: Colors.white,
+              minimumSize: const Size.fromHeight(52),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              elevation: 0,
+            ),
           ),
-        ),
         const SizedBox(height: 8),
         Text(
-          "Votre engagement informe immédiatement l'équipe médicale de garde.",
+          isOwner
+              ? "C'est votre alerte : vous ne pouvez pas vous engager dessus comme donneur."
+              : "Votre engagement informe immédiatement l'équipe médicale de garde.",
           textAlign: TextAlign.center,
           style: TextStyle(fontSize: 11, color: palette.textSecondary),
         ),
       ],
     );
+  }
+
+  Future<void> _confirmCloseAlert(
+    BuildContext context,
+    WidgetRef ref,
+    BloodAlert alert,
+  ) async {
+    final palette = context.palette;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: palette.surface,
+        title: Text(
+          "Clôturer cette alerte ?",
+          style: TextStyle(color: palette.textPrimary),
+        ),
+        content: Text(
+          "Elle ne sera plus visible dans les urgences ouvertes. À faire une "
+          "fois le besoin en sang couvert.",
+          style: TextStyle(color: palette.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Annuler'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.primaryRed,
+            ),
+            child: const Text('Clôturer'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    try {
+      await ref.read(bloodAlertRepositoryProvider).closeAlert(alert.id);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Impossible de clôturer : $e')));
+      }
+    }
   }
 }
