@@ -17,13 +17,13 @@ VitalLink fédère demandeurs, donneurs bénévoles, hôpitaux et officines avec
  1. Périmètre du MVP (Version Hackathon FFCS 2026)
 
 Le MVP regroupe l'ensemble des fonctionnalités livrées et validées pour la démonstration officielle :
-A. Compte Citoyen Universel & Authentification
+### A. Compte Citoyen Universel & Authentification
 
     Inscription & Connexion rapide par téléphone : Authentification fluide par numéro de téléphone et vérification OTP (Firebase Auth).
     Statut Donneur en 1 clic : Tout utilisateur citoyen peut à la fois émettre une alerte pour un proche et basculer en mode « Prêt à donner mon sang » (isAvailableDonor) avec indication de son groupe sanguin.
     Référentiel Territorial Décentralisé (AfricaLocations) : Sélection du pays et de la subdivision administrative officielle dès l'inscription ou modifiable via le profil (Région pour le Cameroun, Département pour le Bénin, Province pour la RD Congo et le Burundi).
 
-B. Module Urgences Sanguines & Mobilisation Citoyenne
+### B. Module Urgences Sanguines & Mobilisation Citoyenne
 
     Lancement d'Alerte Express (Demandeur) : Formulaire rapide en un écran : sélection de l'hôpital répertorié, service/département, groupe sanguin recherché, nombre de poches nécessaires, degré d'urgence (CRITICAL, HIGH, MODERATE) et numéro de téléphone direct.
     Algorithme Médical de Compatibilité Sanguine (Dart) : Déduction automatique et instantanée des groupes compatibles (ABO et Rhésus) sans calcul manuel pour sécuriser les appels.
@@ -40,19 +40,19 @@ B. Module Urgences Sanguines & Mobilisation Citoyenne
         Contact téléphonique direct du standard hospitalier pour confirmation avant déplacement et ouverture de l'itinéraire cartographique.
     Suivi en Direct (Temps Réel) : Compteur dynamique des donneurs mobilisés par rapport aux besoins exprimés, et clôture de l'alerte dès couverture du besoin.
 
-C. Guide du Donneur & Quiz IA d'Éligibilité en Ligne (VitaAIService)
+### C. Guide du Donneur & Quiz IA d'Éligibilité en Ligne (VitaAIService)
 
     Quiz Interactif d'Éligibilité en Ligne : Questionnaire dynamique propulsé par une IA en ligne (VitaAIService) évaluant les critères médicaux d'aptitude au don (poids, antécédents médicaux récents, tatouages, prise de médicaments, voyages).
     Tableau de Compatibilité Universelle : Matrice hématologique complète consultable à tout moment, fonctionnant sans connexion Internet.
     Avertissement Éthique & Légal : Mention systématique rappelant que le guide est informatif et que seul le personnel médical sur place valide l'aptitude finale.
 
-D. Scanner Médical IA (Rodium AI)
+### D. Scanner Médical IA (Rodium AI)
 
     Capture Photo : Prise de vue directe ou sélection dans la galerie d'une ordonnance papier ou d'une boîte de médicament.
     Extraction Multimodale par Vision : Identification automatique du nom commercial du médicament et de sa DCI (Dénomination Commune Internationale).
     Validation Humaine Obligatoire : Écran intermédiaire de vérification permettant à l'utilisateur de modifier, corriger ou supprimer chaque molécule détectée avant de lancer la recherche en pharmacie (zéro prescription automatique).
 
-E. Annuaire Géolocalisé des Pharmacies de Garde
+### E. Annuaire Géolocalisé des Pharmacies de Garde
 
     Géolocalisation & Proximité : Calcul de la distance GPS en temps réel jusqu'à chaque officine répertoriée (geolocator, geoflutterfire_plus).
     Filtre Officiel « De garde maintenant » : Affichage prioritaire des pharmacies ouvertes de nuit et le week-end, avec heure limite de fin de garde.
@@ -62,7 +62,7 @@ E. Annuaire Géolocalisé des Pharmacies de Garde
         Bouton Itinéraire : Tracé direct via Google Maps.
     Indicateurs de Disponibilité des Produits : Statuts de stock essentiels (in_stock, limited, out_of_stock).
 
- 2. Vision de l'Application Complète (Post-Hackathon)
+### 2. Vision de l'Application Complète (Post-Hackathon)
 
 Fonctionnalités avancées constituant la feuille de route du produit global :
 
@@ -80,7 +80,7 @@ Fonctionnalités avancées constituant la feuille de route du produit global :
     Mode Hors-Ligne Renforcé & Synchronisation Dégradée :
         Cache Firestore persistant complet des annuaires d'urgence et numéros de permanence hospitalière, accessible en zone blanche.
 
- Architecture du Projet
+### Architecture du Projet
 
 Organisation modulaire en Clean Architecture / Feature-First avec Flutter Riverpod :
 
@@ -127,7 +127,7 @@ lib/
 tool/
 └── seed_demo_data.dart        # Script de seed officiel pour l'initialisation multi-pays
 
- Modèle de Données Firestore
+ ### Modèle de Données Firestore
 
 users/{uid}
   id, fullName, phoneNumber, country, region, city
@@ -162,15 +162,15 @@ bloodAlerts/{id}/responses/{donorUid}
   estimatedArrival: string ("30 min", "1 h", "2 h")
   createdAt
 
- Sécurité & Règles Firestore (firestore.rules)
+###  Sécurité & Règles Firestore (firestore.rules)
 
     Anonymat médical strict : Tout document d'alerte contenant des informations nominatives de patient (patientName, patientFullName) est systématiquement rejeté à l'écriture.
     Rôles verrouillés : Inscription cliente obligatoirement fixée sur role == 'citizen' avec verified == false.
     Intégrité des annuaires : Interdiction totale des écritures clientes directes sur hospitals et pharmacies en production (allow write: if false;). L'alimentation des structures de référence passe par le script de seed.
 
-Stack Technique
+### Stack Technique
 
-    Langage & Framework : Flutter 3.x / Dart 3.x (Null safety)
+    #Langage & Framework : Flutter 3.x / Dart 3.x (Null safety)
     Gestion d'état : flutter_riverpod (^2.5.1)
     Services Firebase : firebase_core, firebase_auth (OTP), cloud_firestore, firebase_messaging
     Modules IA :
