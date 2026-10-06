@@ -75,7 +75,7 @@ final rawPharmaciesStreamProvider = StreamProvider.autoDispose<List<Pharmacy>>((
 /// doivent pas varier avec ce que l'utilisateur tape ou filtre.
 final allPharmaciesProvider = Provider<List<Pharmacy>>((ref) {
   final pharmaciesAsync = ref.watch(rawPharmaciesStreamProvider);
-  return pharmaciesAsync.asData?.value ?? PharmacyRepository.fallbackPharmacies;
+  return pharmaciesAsync.asData?.value ?? const <Pharmacy>[];
 });
 
 final filteredPharmaciesProvider = Provider<List<Pharmacy>>((ref) {
