@@ -94,6 +94,9 @@ class ProfileLocationController {
     await _ref
         .read(profileRepositoryProvider)
         .updateLocation(uid: uid, country: country, city: city, region: region);
+
+    // Notifie Riverpod que le profil a changé pour recharger aussitôt les flux dépendants
+    _ref.invalidate(userProfileProvider);
   }
 }
 
