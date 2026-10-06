@@ -30,7 +30,10 @@ class _PharmacyListScreenState extends ConsumerState<PharmacyListScreen> {
   Widget build(BuildContext context) {
     final pharmacies = ref.watch(filteredPharmaciesProvider);
     final activeFilter = ref.watch(pharmacyFilterProvider);
-    final onDutyCount = pharmacies.where((p) => p.isOnDuty).length;
+    final onDutyCount = ref
+        .watch(allPharmaciesProvider)
+        .where((p) => p.isOnDuty)
+        .length;
     final palette = context.palette;
     final profile = ref.watch(userProfileProvider).asData?.value;
     final cityLabel = profile != null && profile.city.isNotEmpty

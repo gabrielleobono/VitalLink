@@ -9,6 +9,8 @@ class Hospital {
     required this.phone,
     required this.city,
     required this.location,
+    this.country = '',
+    this.region = '',
   });
 
   final String id;
@@ -17,6 +19,8 @@ class Hospital {
   final String phone;
   final String city;
   final GeoPoint location;
+  final String country;
+  final String region;
 
   factory Hospital.fromFirestore(String id, Map<String, dynamic> data) {
     return Hospital(
@@ -26,6 +30,8 @@ class Hospital {
       phone: data['phone'] as String? ?? '',
       city: data['city'] as String? ?? '',
       location: data['location'] as GeoPoint? ?? const GeoPoint(0, 0),
+      country: data['country'] as String? ?? '',
+      region: data['region'] as String? ?? '',
     );
   }
 }

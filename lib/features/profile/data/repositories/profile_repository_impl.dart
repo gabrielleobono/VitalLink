@@ -62,6 +62,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
     required String displayName,
     required String country,
     required String city,
+    required String region,
     required bool isDonor,
     String? bloodGroup,
   }) async {
@@ -72,6 +73,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
       'phone': '',
       'country': country,
       'city': city,
+      'region': region,
       'verified': false,
       'isDonor': isDonor,
       'fcmTokens': <String>[],
@@ -84,5 +86,19 @@ class ProfileRepositoryImpl implements ProfileRepository {
         'lastDonationAt': null,
       });
     }
+  }
+
+  @override
+  Future<void> updateLocation({
+    required String uid,
+    required String country,
+    required String city,
+    required String region,
+  }) async {
+    await _firestore.collection('users').doc(uid).set({
+      'country': country,
+      'city': city,
+      'region': region,
+    }, SetOptions(merge: true));
   }
 }

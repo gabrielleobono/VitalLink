@@ -155,7 +155,10 @@ class CompatibilityTable extends StatelessWidget {
           : null,
       children: [
         _Cell(receiver.label, bold: true, color: AppColors.primary),
-        _Cell(donors, color: palette.textPrimary),
+        _Cell(
+          donors,
+          color: isHighlighted ? AppColors.textPrimary : palette.textPrimary,
+        ),
       ],
     );
   }

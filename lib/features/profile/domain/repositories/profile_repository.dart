@@ -21,7 +21,18 @@ abstract class ProfileRepository {
     required String displayName,
     required String country,
     required String city,
+    required String region,
     required bool isDonor,
     String? bloodGroup,
+  });
+
+  /// Met à jour uniquement la localisation (écran "Modifier ma
+  /// localisation" du Profil) — ex: un donneur qui déménage, ou un profil
+  /// créé avant l'ajout du champ région.
+  Future<void> updateLocation({
+    required String uid,
+    required String country,
+    required String city,
+    required String region,
   });
 }

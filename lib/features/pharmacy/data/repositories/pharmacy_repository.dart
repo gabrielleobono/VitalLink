@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/pharmacy.dart';
+import 'package:flutter/foundation.dart';
 
 class PharmacyRepository {
   final FirebaseFirestore _firestore;
@@ -75,22 +76,32 @@ class PharmacyRepository {
     ),
   ];
 
-  Stream<List<Pharmacy>> watchPharmacies() {
+  /// Pharmacies limitées au [country] et à la [region] de l'utilisateur
+  Stream<List<Pharmacy>> watchPharmacies({
+    required String country,
+    required String region,
+  }) {
     try {
       return _firestore
           .collection('pharmacies')
+          .where('country', isEqualTo: country)
+          .where('region', isEqualTo: region)
           .snapshots(includeMetadataChanges: true)
           .map((snapshot) {
             if (snapshot.docs.isEmpty) {
-              return fallbackPharmacies;
+              return <Pharmacy>[];
             }
             return snapshot.docs
                 .map((doc) => Pharmacy.fromMap(doc.data(), doc.id))
                 .toList();
           })
-          .handleError((_) => fallbackPharmacies);
-    } catch (_) {
-      return Stream.value(fallbackPharmacies);
+          .handleError((error) {
+            debugPrint('Firestore pharmacies error: $error');
+            return <Pharmacy>[];
+          });
+    } catch (e) {
+      debugPrint('Firestore pharmacies catch: $e');
+      return Stream.value(<Pharmacy>[]);
     }
   }
 
@@ -101,14 +112,14 @@ class PharmacyRepository {
           .get(const GetOptions(source: Source.serverAndCache));
 
       if (snapshot.docs.isEmpty) {
-        return fallbackPharmacies;
+        return <Pharmacy>[];
       }
 
       return snapshot.docs
           .map((doc) => Pharmacy.fromMap(doc.data(), doc.id))
           .toList();
     } catch (_) {
-      return fallbackPharmacies;
+      return <Pharmacy>[];
     }
   }
 }

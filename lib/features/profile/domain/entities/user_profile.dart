@@ -11,6 +11,7 @@ class UserProfile {
     required this.phone,
     required this.country,
     required this.city,
+    required this.region,
     required this.verified,
     required this.isDonor,
   });
@@ -21,6 +22,7 @@ class UserProfile {
   final String phone;
   final String country;
   final String city;
+  final String region;
   final bool verified;
   final bool isDonor;
 }
