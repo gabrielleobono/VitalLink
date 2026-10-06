@@ -81,86 +81,145 @@ Fonctionnalités avancées constituant la feuille de route du produit global :
         Cache Firestore persistant complet des annuaires d'urgence et numéros de permanence hospitalière, accessible en zone blanche.
 
 ### Architecture du Projet
+Le projet applique une approche Feature-First et les principes de la Clean Architecture couplés à Riverpod pour la gestion d'état réactive et découplée :
 
-Organisation modulaire en Clean Architecture / Feature-First avec Flutter Riverpod :
-
+```
 lib/
 ├── core/
-│   ├── constants/             # donor_eligibility_constants.dart
-│   ├── network/               # Clients réseau et connectivité
-│   ├── providers/             # firestore_providers.dart (instances & streams globaux)
-│   ├── router/                # app_router.dart (GoRouter, redirections auth & session)
-│   ├── services/              # firestore_offline_config, launcher_service, 
-│   │                          # local_notifications_service, location_service
-│   ├── theme/                 # app_colors, app_palette, app_theme, theme_mode_provider
-│   ├── utils/                 # blood_compatibility.dart (matrice hématologique Dart)
-│   └── widgets/               # vital_link_logo.dart et composants transverses
+│   ├── constants/          # Constantes médicales (éligibilité don)
+│   ├── network/            # Connectivité et clients réseau
+│   ├── providers/          # Providers Firestore globaux
+│   ├── router/             # app_router.dart (GoRouter, redirections auth)
+│   ├── services/           # Services système natifs (GPS, WhatsApp, appels tel:)
+│   ├── theme/              # Couleurs et thèmes
+│   ├── utils/              # blood_compatibility.dart (matrice de compatibilité)
+│   └── widgets/            # vital_link_logo.dart et composants réutilisables
+│
 ├── features/
-│   ├── auth/                  # Session citoyenne, OTP, AfricaLocations
+│   ├── auth/               # Authentification OTP et référentiel AfricaLocations
 │   │   ├── data/
 │   │   ├── domain/
 │   │   └── presentation/
-│   ├── blood_requests/        # Création et détail des urgences de sang, suivi
+│   ├── blood_requests/     # Urgences de sang et promesses de don (pledges)
 │   │   ├── data/
 │   │   ├── domain/
 │   │   └── presentation/
-│   ├── donor_guide/           # Guide du donneur & Quiz IA (VitaAIService)
-│   │   ├── data/              # vita_ai_service.dart
-│   │   └── presentation/      # Écrans du quiz interactif et compatibilité
-│   ├── home/                  # Dashboard, alertes récentes, pharmacies de garde
+│   ├── donor_guide/        # Guide du donneur et Quiz IA (VitaAIService)
+│   │   ├── data/
+│   │   └── presentation/
+│   ├── home/               # Tableau de bord et alertes de la zone
 │   │   ├── data/
 │   │   ├── domain/
 │   │   └── presentation/
-│   ├── pharmacy/              # Annuaire des officines, consultation des gardes
+│   ├── pharmacy/           # Annuaire des officines et gardes nocturnes
 │   │   ├── data/
 │   │   └── presentation/
-│   ├── profile/               # Profil citoyen, statut donneur, EditLocationScreen
+│   ├── profile/            # Profil citoyen et changement de localisation
 │   │   ├── data/
 │   │   ├── domain/
 │   │   └── presentation/
-│   └── scan_ai/               # Vision Rodium AI et validation d'ordonnance
+│   └── scan_ai/            # Scanner ordonnances / médicaments (Rodium AI)
 │       ├── data/
 │       ├── domain/
 │       └── presentation/
-├── firebase_options.dart      # Configuration multi-plateformes Firebase
-└── main.dart                  # Point d'entrée de l'application
+│
+├── firebase_options.dart   # Configuration multi-plateformes Firebase
+└── main.dart               # Point d'entrée de l'application
+
 tool/
-└── seed_demo_data.dart        # Script de seed officiel pour l'initialisation multi-pays
+├── seed_demo_data.dart     # Seed hôpitaux et pharmacies multi-pays
+└── seed_test_alerts.dart   # Seed alertes de test
+```
 
- ### Modèle de Données Firestore
 
-users/{uid}
-  id, fullName, phoneNumber, country, region, city
-  bloodGroup: "O-" | "O+" | "A-" | "A+" | "B-" | "B+" | "AB-" | "AB+"
-  isAvailableDonor: bool
-  role: "citizen" | "pharmacist" | "medical_staff" | "admin"
-  fcmToken, createdAt
+##  Modèle de Données Firestore
 
-donors/{uid}                # Données sensibles séparées
-  bloodGroup, location: GeoPoint, geohash
-  available: bool, lastDonationAt: Timestamp
+### 1. `users/{uid}`
+Profil citoyen unique et paramètres du compte.
 
-hospitals/{id}              # Lecture publique, écriture protégée
-  name, address, city, region, country, location: GeoPoint
-  emergencyPhone, isVerified
+| Champ | Type | Description |
+| :--- | :--- | :--- |
+| `id` | String | Identifiant Firebase Auth (`uid`) |
+| `fullName` | String | Nom complet d'usage |
+| `phoneNumber` | String | Numéro de téléphone au format international |
+| `country` | String | Pays (`Cameroun`, `Bénin`, `RD Congo`, `Burundi`...) |
+| `region` | String | Subdivision officielle (`Centre`, `Littoral`, `Kinshasa`...) |
+| `city` | String | Ville de résidence |
+| `bloodGroup` | String | Groupe sanguin (`O+`, `O-`, `A+`, `A-`, `B+`, `B-`, `AB+`, `AB-`) |
+| `isAvailableDonor` | bool | Statut bénévole « Prêt à donner mon sang » |
+| `role` | String | Fixé à `citizen` (compte citoyen universel) |
+| `fcmToken` | String | Jeton de notification push ciblée |
+| `createdAt` | Timestamp | Date de création du profil |
 
-pharmacies/{id}             # Lecture publique
-  name, address, city, region, country, location: GeoPoint, geohash
-  phoneNumber, whatsappNumber, isOnDuty: bool, dutyEnd: Timestamp
+---
 
-bloodAlerts/{id}            # Fil des urgences (ZÉRO nom de patient)
-  recipientBloodGroup, compatibleGroups: string[]
-  unitsNeeded, unitsPledged, urgency: "CRITICAL" | "HIGH" | "MODERATE"
-  hospitalId, hospitalDepartment, city, region, country
-  source: "citizen" | "medical_staff"
-  alertBadgeVariant: "citizen" | "verified"
-  contactPhone, status: "OPEN" | "FULFILLED" | "CLOSED"
-  createdAt, expiresAt
+### 2. `donors/{uid}`
+Index géospatial et médical séparé pour protéger les données sensibles.
 
-bloodAlerts/{id}/responses/{donorUid}
-  status: "COMMITTED" | "ARRIVED" | "COMPLETED" | "CANCELLED"
-  estimatedArrival: string ("30 min", "1 h", "2 h")
-  createdAt
+| Champ | Type | Description |
+| :--- | :--- | :--- |
+| `bloodGroup` | String | Groupe sanguin pour ciblage d'urgence |
+| `location` | GeoPoint | Coordonnées GPS du donneur |
+| `geohash` | String | Index de proximité géographique |
+| `available` | bool | Disponibilité active déclarée |
+| `lastDonationAt` | Timestamp | Date du dernier don (délai de 90 jours) |
+
+---
+
+### 3. `hospitals/{id}`
+Annuaire de référence des formations sanitaires.
+
+| Champ | Type | Description |
+| :--- | :--- | :--- |
+| `name` | String | Dénomination officielle de l'hôpital |
+| `address` | String | Adresse physique / quartier |
+| `country` / `region` / `city` | String | Rattachement territorial |
+| `location` | GeoPoint | Coordonnées GPS pour l'itinéraire |
+| `emergencyPhone` | String | Ligne directe du standard ou des urgences (déclenche `tel:`) |
+| `isVerified` | bool | Établissement certifié |
+
+---
+
+### 4. `pharmacies/{id}`
+Annuaire des officines pharmaceutiques et gardes de nuit.
+
+| Champ | Type | Description |
+| :--- | :--- | :--- |
+| `name` | String | Nom de l'officine |
+| `address` | String | Adresse physique et quartier |
+| `country` / `region` / `city` | String | Localisation territoriale |
+| `location` | GeoPoint | Coordonnées GPS |
+| `phoneNumber` | String | Appel vocal natif direct (`tel:`) |
+| `whatsappNumber` | String | Contact WhatsApp avec message prérempli |
+| `isOnDuty` | bool | Statut de garde active (nuit et week-end) |
+| `dutyEnd` | Timestamp | Date et heure de fin de garde |
+
+---
+
+### 5. `bloodAlerts/{id}`
+Flux des alertes de sang en direct (**zéro donnée nominative de patient**).
+
+| Champ | Type | Description |
+| :--- | :--- | :--- |
+| `recipientBloodGroup` | String | Groupe sanguin recherché |
+| `compatibleGroups` | List&lt;String&gt; | Groupes compatibles calculés par l'algorithme |
+| `unitsNeeded` | int | Nombre de poches requises |
+| `unitsPledged` | int | Nombre de promesses de don enregistrées |
+| `urgency` | String | Niveau de criticité (`CRITICAL`, `HIGH`, `MODERATE`) |
+| `hospitalId` | String | Référence de l'hôpital |
+| `hospitalDepartment` | String | Service demandeur (ex: Réanimation, Maternité) |
+| `country` / `region` / `city` | String | Localisation de l'urgence |
+| `alertBadgeVariant` | String | Badge visuel (`citizen` ou `verified`) |
+| `contactPhone` | String | Numéro direct d'appel d'urgence |
+| `status` | String | État (`OPEN`, `FULFILLED`, `CLOSED`) |
+| `createdAt` / `expiresAt` | Timestamp | Création et expiration de l'alerte |
+
+#### Sous-collection `bloodAlerts/{id}/responses/{donorUid}`
+Engagement des donneurs en temps réel :
+- **`status`** : `COMMITTED` (engagé), `ARRIVED` (sur place), `COMPLETED` (don validé), `CANCELLED`.
+- **`estimatedArrival`** : Délai annoncé (`Dans 30 min`, `Dans 1 h`, `Dans 2 h`).
+- **`createdAt`** : Horodatage de la promesse de don.
+
 
 ###  Sécurité & Règles Firestore (firestore.rules)
 
