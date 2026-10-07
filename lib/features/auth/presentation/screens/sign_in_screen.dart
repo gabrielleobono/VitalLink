@@ -353,6 +353,25 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                 'Nous vous enverrons un code de confirmation sécurisé par SMS.',
                 style: TextStyle(fontSize: 12, color: palette.textSecondary),
               ),
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.tealLight,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  'Numéro de test (évaluateurs) : +237 6 00 00 00 00',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.tealPrimary,
+                  ),
+                ),
+              ),
               if (_errorMessage != null) ...[
                 const SizedBox(height: 10),
                 Text(
@@ -408,6 +427,25 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               Text(
                 'Entrez le code reçu par SMS au $_dialCode${_phoneController.text.trim()}.',
                 style: TextStyle(fontSize: 12, color: palette.textSecondary),
+              ),
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.tealLight,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  'Code de test (évaluateurs) : 000000',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.tealPrimary,
+                  ),
+                ),
               ),
               const SizedBox(height: 8),
               TextField(
